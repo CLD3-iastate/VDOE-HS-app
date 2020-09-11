@@ -1,0 +1,12 @@
+name: va-fafsa
+title: va-fafsa
+username:
+account: dads2busy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2337111
+bundleId: 3175478
+url: https://dads2busy.shinyapps.io/va-fafsa/
+when: 1590078331.80048
+asMultiple: FALSE
+asStatic: FALSE

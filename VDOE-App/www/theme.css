@@ -1,0 +1,17 @@
+.leaflet-container {
+    background: #FFFFFF;
+    outline: 0;
+}
+
+
+.container-fluid{
+  border-top-color: #F17E1D;
+  border-top-style: solid;
+  border-top-width: 5px;
+}
+
+.BII-logo {
+  width: 70%;
+  height: 30%;
+}
+
