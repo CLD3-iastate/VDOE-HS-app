@@ -14,6 +14,7 @@ library(readxl)
 library(plotly)
 library(GGally)
 library(ggrepel)
+library(DT)
 
 source("IA_parcoords.R")
 
@@ -50,7 +51,7 @@ IA_aea <- st_transform(IA_aea, 4326)
 
 
 #
-# VA HS tab plot labels --------------------------------------------------------------------------------------------------
+# VA plot labels --------------------------------------------------------------------------------------------------
 #
 
 label_division <- lapply(
@@ -79,17 +80,17 @@ labels <- lapply(paste("<strong>High School Name: </strong>",
                        "<strong> # 2019-20 Seniors: </strong>",
                        hs$POP12_2019,
                        "<br />",
-                       "<strong> # Disadvantaged: </strong>",
+                       "<strong> # Disadvantaged Seniors: </strong>",
                        round(hs$DIS12, 0),
                        "<br />",
-                       "<strong> # English Learners: </strong>",
+                       "<strong> # Senior English Learners: </strong>",
                        hs$EL12,
                        "<br />",
-                       "<strong> # Minority: </strong>",
-                       hs$MnrtS12,
-                       "<br />",
-                       "<strong> # Black, Not of Hispanic Origin: </strong>",
-                       hs$AA12
+                       "<strong> # Senior Minority Students: </strong>",
+                       hs$MnrtS12
+                       #"<br />",
+                       #"<strong> # Black, Not of Hispanic Origin: </strong>",
+                       #hs$AA12
 ), htmltools::HTML)
 
 
@@ -101,73 +102,66 @@ label2 <- lapply(paste("<strong>Community College Name: </strong>",
                        vccs$Website, paste("</a>")), htmltools::HTML)
 
 #
-# IA high school tab plot --------------------------------------------------------------
+# IA plot labels --------------------------------------------------------------
 #
 
 IA_hs_labels <- lapply(paste("<strong>High School Name: </strong>",
                        IA_hs_fafsa$`School Name.x`,
                        "<br />",
-                       "<strong>AEA Region</strong>",
+                       "<strong>AEA Region: </strong>",
                        IA_hs_fafsa$`AEA Name`,
                        "<br />",
-                       "<strong> # 2019-20 Seniors: </strong>",
+                       "<strong> # Seniors: </strong>",
                        IA_hs_fafsa$seniors,
                        "<br />",
-                       "<strong> # Free and Reduced Lunch: </strong>",
+                       "<strong> # Seniors Receiving Free or Reduced Lunch: </strong>",
                        IA_hs_fafsa$free_reduced_lunch,
                        "<br />",
-                       "<strong> # English Learners: </strong>",
+                       "<strong> # Senior English Learners: </strong>",
                        IA_hs_fafsa$english_learners,
                        "<br />",
-                       "<strong> # Black, Not of Hispanic Origin: </strong>",
-                       IA_hs_fafsa$black
+                       "<strong> # Senior Minority Students: </strong>",
+                       IA_hs_fafsa$minority 
+                       #"<strong> # Black, Not of Hispanic Origin: </strong>",
+                       #IA_hs_fafsa$black
 ), htmltools::HTML)
 
 
 IA_co_labels <- lapply(paste("<strong>County: </strong>",
                         IA_fafsa_by_county$`County Name`,
                         "<br />",
-                        "<strong> % Seniors that completed FAFSA: </strong>",
-                        round(IA_fafsa_by_county$perc_complete,0),
-                        "<br />",
                         "<strong> # Seniors: </strong>",
-                        round(IA_fafsa_by_county$num_seniors,0)
+                        round(IA_fafsa_by_county$num_seniors,0),
+                        "<br />",
+                        "<strong> % Seniors that completed FAFSA: </strong>",
+                        round(IA_fafsa_by_county$perc_complete_20,0)
 ), htmltools::HTML)
 
 
-pal <- colorBin("Blues", domain = IA_fafsa_by_county$perc_complete, 
-                bins = c(30, 40, 50, 60, 70, 80, 90, 100), na.color = "gray") #bins = 7)
+IA_relfaf_labels <- lapply(
+  paste("<strong>County: </strong>",
+        IA_fafsa_by_county$`County Name`,
+        "<br />",
+        "<strong>Relative Percent Difference 2019-20: </strong>",
+        round(IA_fafsa_by_county$pct_rel_diff,2),
+        "<br />",
+        "<strong># of Completed FAFSAs in 2020: </strong>",
+        IA_fafsa_by_county$num_complete_fafsa_20, 
+        "<br />",
+        "<strong># of Completed FAFSAs in 2019: </strong>",
+        IA_fafsa_by_county$num_complete_fafsa_19),
+  
+  htmltools::HTML
+)
 
-m = leaflet(data = IA_fafsa_by_county) %>% #, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
-  addTiles() %>%
-  addPolygons(color = "#5A5766", weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
-              fillColor = ~pal(perc_complete), fillOpacity = .8) %>%
-  addPolylines(data = IA_aea, color = "#5A5766", weight = 5, fill = "transparent", fillOpacity = 0, 
-               opacity = 1) %>%
-  addPolygons(color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
-              fillOpacity = 0, label = IA_co_labels,
-              labelOptions = labelOptions(direction = "bottom", 
-                                          style = list("font-size" = "12px", 
-                                                       "border-color" = "rgba(0,0,0,0.5)", 
-                                                       direction = "auto"
-                                          ))
-  )%>%
-  addCircleMarkers(data = IA_hs_fafsa, radius = 7, fillColor = "orange", fillOpacity = 0.2, 
-                   stroke = TRUE, color = "orange", opacity = 1, weight = 1,
-                   popup= IA_hs_labels) %>%
-  #setMapWidgetStyle(list(background= "transparent"))  %>%
-  addLegend("bottomleft", pal = pal, values = ~round(perc_complete, 0),
-            title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
 
-# ------------------------------------------------------------
+
+
 
 
 
 
 virginia[virginia$new_name == "COLONIAL HEIGHTS CITY", "CO_Per"] <- 100
-
-pal <- colorBin(palette ="Blues", domain = virginia$CO_Per, bins = 7, na.color = "transparent")
-
 
 #
 # Vicki's parallel coordinates code -----------------------------------------
@@ -623,8 +617,8 @@ for(i in 1:8){
     select(SCHOOL, RELDIF, PERDISADV12.2019, POP12.2019, Region)%>% 
     filter(RELDIF < -25 & Region ==i ) %>% 
     arrange(-RELDIF) %>%
-    mutate(RELDIF = formatC(round(RELDIF, 4), format = 'f', digits = 4),
-           PERDISADV12.2019 = formatC(round(as.numeric(as.character(PERDISADV12.2019)), 4), format = 'f', digits = 4))%>%
+    mutate(RELDIF = formatC(round(RELDIF, 2), format = 'f', digits = 2),
+           PERDISADV12.2019 = formatC(round(as.numeric(as.character(PERDISADV12.2019)), 2), format = 'f', digits = 2))%>%
     select(-Region) %>%
     rename("High School" = "SCHOOL", "Relative Percent Difference in Completed FAFSA Applications" = "RELDIF", "Percent Disadvantaged Seniors"= "PERDISADV12.2019", "Number of Seniors" = "POP12.2019") 
   
@@ -649,9 +643,9 @@ for(name in c("Central Rivers", "Grant Wood", "Great Prairie", "Green Hills",
   
   
   p <- IA_parcoord.val(data,
-                    columns=c(35, 33, 31, 29, 27, 25), 
+                    columns=c(37, 35, 33, 31, 29, 27), #
                     scale="globalminmax",
-                    groupColumn=37, showPoints=TRUE, shadeBox=NULL,
+                    groupColumn=39, showPoints=TRUE, shadeBox=NULL,
                     title=paste(name, "Parallel Coordinate Plot for Completed FAFSA Submissions over Time by High School"),
                     alphaLines=1, boxplot=TRUE) +
     scale_color_manual(values=cbPalette[c(7,1)]) +
@@ -693,18 +687,24 @@ for(name in c("Central Rivers", "Grant Wood", "Great Prairie", "Green Hills", "H
     select(`School Name.x`, rel_diff_20_19, free_reduced_lunch, seniors, `AEA Name`) %>%
     filter(`AEA Name` == name & rel_diff_20_19 < -25) %>%
     arrange(-rel_diff_20_19) %>%
-    mutate(rel_diff_20_19 = formatC(round(rel_diff_20_19, 4), format = 'f', digits = 4)) %>%
+    mutate(rel_diff_20_19 = formatC(round(rel_diff_20_19, 2), format = 'f', digits = 2)) %>%
     select(-`AEA Name`) %>%
-    rename("High School" = "School Name.x", 
-           "Relative Percent Difference in Completed FAFSA Applications" = "rel_diff_20_19", 
-           "Number of Seniors with Free or Reduced Lunch"= "free_reduced_lunch", 
+    rename("High School" = "School Name.x",
+           "Relative Percent Difference in Completed FAFSA Applications" = "rel_diff_20_19",
+           "Number of Seniors with Free or Reduced Lunch"= "free_reduced_lunch",
            "Number of Seniors" = "seniors")
-  
+
   assign(name, data) # saves each table
 }
 
 
+# color palettes --------------------------------------------
 
+IA_fpal <- colorQuantile("Blues", domain = IA_fafsa_by_county$perc_complete_20, probs = seq(0, 1, length = 6), 
+                         na.color = 'gray', right = FALSE)
+
+VA_fpal <- colorQuantile(palette ="Blues", domain = virginia$CO_Per, probs = seq(0, 1, length = 6), 
+                         na.color = 'gray', right = FALSE)
 
 #
 # ui -----------------------------------------------------------------------------------------
@@ -728,7 +728,7 @@ ui <- fluidPage(
     )),
   hr(),
   
-  fluidRow(width = 12,style = "margin = 20px",  column(12, align = "center", h2(strong("COVID-19 Impact on Virginia High School Seniors and College Students")))),
+  fluidRow(width = 12,style = "margin = 20px",  column(12, align = "center", h2(strong("COVID-19 Impact on High School Seniors and College Students")))),
   
   hr(),
   
@@ -740,7 +740,7 @@ ui <- fluidPage(
                   p('The 2019-2020 high school seniors and college students have ended their final year being confined to their homes, 
                     taking classes and tests online, and 
                     are now facing disruptions in their post-secondary education… will college start in the fall and if it does will their 
-                    parents be able to pay for it? Here we describe high schools in Virginia  to identify potentially vulnerable high
+                    parents be able to pay for it? Here we describe high schools in Iowa and Virginia to identify potentially vulnerable high
                     school seniors; for example, the percentage of 
                     students who are economically disadvantaged, English learners, African Americans, and Hispanics. Federal administrative 
                     data on the number of completed Free Applications for Federal Student Aid (FAFSA) is used to identify high schools 
@@ -751,601 +751,687 @@ ui <- fluidPage(
   
   tabsetPanel(
     
-    # VA high school tab -------------------------------------------
+    # High school tab -------------------------------------------
     
-    tabPanel(h4("Virginia High School Map"), 
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(10, align = 'center', 
-                             h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Virginia Counties and Cities'))),
-                      column(1)),
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(6, p("Virginia Superintendent Regions", align = "center"),  
-                             tags$img(src = "regions.png", width = "100%")),
-                      column(4, p(tags$span(' Orange ', style = "background-color: orange; color: white;border-radius: 25px; white-space: pre-wrap;"), 
-                                  'circles locate public high schools; click on the circle to view data on the 2019-2020 seniors.'), 
-                                p('Thick borders indicate Superintendent Districts.'),
-                                p("Use the checkbox below to show or hide the high schools."), 
-                                checkboxInput(inputId = "showPoints", label = "Show High Schools", value = TRUE),
-                                p(em('Please be patient as the map loads below.'))),
-                      column(1)
-                      ),
-              
-             br(),
-             
-             fluidRow(column(1),
-                      column(10, align = "center", leafletOutput("mymap1", width = "100%", height = "700px")),
-                      column(1)
-                      )
-             ),
-    
-    # VA college tab -------------------------------------------------------------
-    
-    tabPanel(h4("Virginia College Map"), 
-             fluidRow(width = 12, 
-                      column(12, align = "center", h3(strong("In-State Higher-Education Undergraduate Enrollment by Locality")))
-             ),
-             
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(10, 
-                             
-                             p('Use the selectors to choose academic year and higher-education type. Hover over a county to show the 
-                               county name, and number of students enrolled and percentage of fall students receiving PELL for the 
-                               year and higher-education type selected.'),
-                             p('PELL data for 2019-2020 is not available yet.  All of the 2019-2020 PELL data is listed as NA.'),
-                             p(tags$span(' Orange ', style = "background-color: #E69F00; color: white;border-radius: 25px; white-space: pre-wrap;"),  'circles locate public, four-year colleges.'),
-                             p(tags$span(' Green ', style = "background-color: #009E73; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate private, four-year colleges.'), 
-                             p(tags$span(' Pink ', style = "background-color: #CC79A7; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate community colleges.'), p("Click on circle to view college name and website.")
-                             ),
-                      column(1)
-                      ),
+    tabPanel(h4("High School Map"), 
              
              br(),
-             
-             
-             
-             fluidRow(width = 12, 
-                      column(width =1),
-                      column(width = 3, align = "left",
-                             selectInput("whichyear", "Academic Year",
-                                         choices = list(
-                                           "2019-2020",
-                                           "2018-2019",
-                                           "2017-2018",
-                                           "2016-2017",
-                                           "2015-2016"
-                                         ),
-                                         selected = "2019-2020")
-                      ),
-                      
+             fluidRow(width = 12,
+                      column(1),
                       column(width=4, align="left",
-                             selectInput("whichtype", "Higher-Education Type",
-                                         choices = list("Grand Total, All Reporting Institutions",
-                                                        "Total Private, Non-Profit, Four-Year Institutions",
-                                                        "Total Public Four-Year Institutions",
-                                                        "Total Public Two-Year Institutions"
+                             selectInput("hs_state", h4(strong("Select a State")),
+                                         choices = list("Iowa",
+                                                        "Virginia"
                                          ),
-                                         selected = "Grand Total, All Reporting Institutions")
-                      ),
-                      
-                      column(width=4, align="center",
-                             h4(strong("Virginia Summary")),
-                             textOutput("year"),
-                             tags$head(tags$style("#year{font-size: 20px}"))
-                             
+                                         selected = "Iowa")
                       )
-                      
              ),
              
+             conditionalPanel("input.hs_state == 'Iowa'",
              
-             fluidRow(
-               column(1),
-               column(width = 7, 
-                      leafletOutput("leafplot", width = "100%", height = "500px")
-               ),
-               
-               column(width = 4, align = "center",
-                      plotOutput("VA_enr_by_type", height = "250px", width = "400px"),
-                      tableOutput("enroll_table"),
-                      plotOutput("FT_PT", height = "150px", width = "360px")
-               )
-               
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(10, align = 'center',
+                                              h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Iowa Counties and Cities'))),
+                                       column(1)),
+                              
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(3, p("Iowa Area Education Agencies (AEA) Regions", align = "center"),
+                                              tags$img(src = "IA/aea-map.jpg", width = "100%"),
+                                              p("Graphic Source: http://www.iowaaea.org/find-my-aea/")
+                                       ),
+                                       column(4, align = "center", br(), br(), 
+                                              tags$img(src = "IA/aea_barplot.png", width = "100%")),
+                                       column(3, br(), br(), 
+                                              p(tags$span(' Orange ', style = "background-color: orange; color: white;border-radius: 25px; white-space: pre-wrap;"),
+                                                'circles locate public high schools; click on the circle to view data on the 2019-2020 seniors.'),
+                                              p('Thick borders indicate AEA Regions.'),
+                                              checkboxInput(inputId = "IAshowPoints", label = "Show High Schools", value = TRUE),
+                                              p(em('Please be patient as the map loads below.'))#,
+                                              
+                                       ),
+                                       column(1)
+                              ),
+                              
+                              br(),
+                              
+                              fluidRow(column(1),
+                                       column(10, align = "center", leafletOutput("IA_hs_tab_map", width = "100%", height = "600px")),
+                                       column(1)
+                              )
+                              
              ),
-             #fluidRow(
-             # plotOutput("FT_PT", width = '100%')
-             #),
              
-             fluidRow(align="center",
-                      print("Source: State Council of Higher Education for Virginia, 
-                            Tables LD03, E02, and FA31C")
-                      ),
+             conditionalPanel("input.hs_state == 'Virginia'",
              
-             hr(),
-             fluidRow(align="center",
-                      h3(strong("In-State Undergraduate Demographic Trends")),
-                      br()),
-             fluidRow(align="center",
-                      selectInput("hi_ed_type", "Higher-Education Type",
-                                  choices = list("Grand Total, All Reporting Institutions",
-                                                 "Total Private, Non-Profit, Four-Year Institutions",
-                                                 "Total Public Four-Year Institutions",
-                                                 "Total Public Two-Year Institutions"),
-                                  
-                                  selected = "Grand Total, All Reporting Institutions")),
-             fluidRow( style = "margin: 20px;",
-                       column(width = 6, plotOutput("race_eth", width = '100%', height = "450px")),
-                       column(width = 6, plotOutput("gender", width = '100%'))),
-             
-             fluidRow(align="center", style = "margin: 20px;",
-                      print("Source: State Council of Higher Education for Virginia, Table E02")
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(10, align = 'center', 
+                                              h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Virginia Counties and Cities'))),
+                                       column(1)),
+                              
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(6, p("Virginia Superintendent Regions", align = "center"),  
+                                              tags$img(src = "regions.png", width = "100%")),
+                                       column(4, p(tags$span(' Orange ', style = "background-color: orange; color: white;border-radius: 25px; white-space: pre-wrap;"), 
+                                                   'circles locate public high schools; click on the circle to view data on the 2019-2020 seniors.'), 
+                                              p('Thick borders indicate Superintendent Districts.'),
+                                              p("Use the checkbox below to show or hide the high schools."), 
+                                              checkboxInput(inputId = "showPoints", label = "Show High Schools", value = TRUE),
+                                              p(em('Please be patient as the map loads below.'))),
+                                       column(1)
+                              ),
+                              
+                              br(),
+                              
+                              fluidRow(column(1),
+                                       column(10, align = "center", leafletOutput("mymap1", width = "100%", height = "600px")),
+                                       column(1)
+                              )
              )
              
-             ),
+    ),
     
-    # VA - FAFSA tab ----------------------------------
+    # College tab -------------------------------------------------------------
+    
+    tabPanel(h4("College Map"), 
+             
+             br(),
+             fluidRow(width = 12,
+                      column(1),
+                      column(width=4, align="left",
+                             selectInput("col_state", h4(strong("Select a State")),
+                                         choices = list("Iowa",
+                                                        "Virginia"
+                                         ),
+                                         selected = "Iowa")
+                      )
+             ),
+             
+             
+             conditionalPanel("input.col_state == 'Iowa'",
+                              fluidRow(width = 12, 
+                                       column(12, align = "center", h3(strong("Higher-Education Graduate Plans by Locality")))
+                              ),
+                              
+                              
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(10, 
+                                              
+                                              p('Use the selectors to choose academic year and higher-education type. Hover over a county to show the 
+                                                county name, and number of students planning to attend for the 
+                                                year and higher-education type selected.'),
+                                              p(tags$span(' Orange ', style = "background-color: #E69F00; color: white;border-radius: 25px; white-space: pre-wrap;"),  'circles locate public, four-year colleges.'),
+                                              p(tags$span(' Green ', style = "background-color: #009E73; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate private, four-year colleges.'), 
+                                              p(tags$span(' Pink ', style = "background-color: #CC79A7; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate community colleges.'), p("Click on circle to view college name and website.")
+                                       ),
+                                       column(1)
+                              ),
+                              
+                              br(),
+                              
+                              
+                              
+                              fluidRow(width = 12, 
+                                       column(width =1),
+                                       column(width = 3, align = "left",
+                                              selectInput("IAwhichyear", "Academic Year",
+                                                          choices = list(
+                                                            "2018-2019",
+                                                            "2017-2018",
+                                                            "2016-2017",
+                                                            "2015-2016"
+                                                          ),
+                                                          selected = "2018-2019")
+                                       ),
+                                       
+                                       column(width=4, align="left",
+                                              selectInput("IAwhichtype", "Higher-Education Type",
+                                                          choices = list("All Institutions",
+                                                                         "Private, Non-Profit, Four-Year Institutions",
+                                                                         "Public Four-Year Institutions",
+                                                                         "Community Colleges"
+                                                          ),
+                                                          selected = "All Institutions")
+                                       ),
+                                       
+                                       column(width=4, align="center",
+                                              h4(strong("Iowa Summary")),
+                                              textOutput("IAyear"),
+                                              tags$head(tags$style("#year{font-size: 20px}"))
+                                              
+                                       )
+                                       
+                              ),
+                              
+                              
+                              fluidRow(
+                                column(1),
+                                column(width = 7, 
+                                       leafletOutput("IAcolleges_map", width = "100%", height = "500px")
+                                ),
+                                
+                                column(width = 4, align = "center",
+                                       plotOutput("IAenroll_plot", height = "250px", width = "400px"),
+                                       tableOutput("IAenroll_table")
+                                       #plotOutput("FT_PT", height = "150px", width = "360px")
+                                )
+                                
+                              ),
+                              
+                              
+                              fluidRow(align="center",
+                                       print("Source: Iowa Department of Education, Graduate Intentions Dataset")
+                              )
+                              
+             ),
+             
+             conditionalPanel("input.col_state == 'Virginia'",
+                              
+                              fluidRow(width = 12, 
+                                       column(12, align = "center", h3(strong("In-State Higher-Education Undergraduate Enrollment by Locality")))
+                              ),
+                              
+                              
+                              fluidRow(width = 12,
+                                       column(1),
+                                       column(10, 
+                                              
+                                              p('Use the selectors to choose academic year and higher-education type. Hover over a county to show the 
+                               county name, and number of students enrolled and percentage of fall students receiving PELL for the 
+                               year and higher-education type selected.'),
+                                              p('PELL data for 2019-2020 is not available yet.  All of the 2019-2020 PELL data is listed as NA.'),
+                                              p(tags$span(' Orange ', style = "background-color: #E69F00; color: white;border-radius: 25px; white-space: pre-wrap;"),  'circles locate public, four-year colleges.'),
+                                              p(tags$span(' Green ', style = "background-color: #009E73; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate private, four-year colleges.'), 
+                                              p(tags$span(' Pink ', style = "background-color: #CC79A7; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate community colleges.'), p("Click on circle to view college name and website.")
+                                       ),
+                                       column(1)
+                              ),
+                              
+                              br(),
+                              
+                              
+                              
+                              fluidRow(width = 12, 
+                                       column(width =1),
+                                       column(width = 3, align = "left",
+                                              selectInput("whichyear", "Academic Year",
+                                                          choices = list(
+                                                            "2019-2020",
+                                                            "2018-2019",
+                                                            "2017-2018",
+                                                            "2016-2017",
+                                                            "2015-2016"
+                                                          ),
+                                                          selected = "2019-2020")
+                                       ),
+                                       
+                                       column(width=4, align="left",
+                                              selectInput("whichtype", "Higher-Education Type",
+                                                          choices = list("Grand Total, All Reporting Institutions",
+                                                                         "Total Private, Non-Profit, Four-Year Institutions",
+                                                                         "Total Public Four-Year Institutions",
+                                                                         "Total Public Two-Year Institutions"
+                                                          ),
+                                                          selected = "Grand Total, All Reporting Institutions")
+                                       ),
+                                       
+                                       column(width=4, align="center",
+                                              h4(strong("Virginia Summary")),
+                                              textOutput("year"),
+                                              tags$head(tags$style("#year{font-size: 20px}"))
+                                              
+                                       )
+                                       
+                              ),
+                              
+                              
+                              fluidRow(
+                                column(1),
+                                column(width = 7, 
+                                       leafletOutput("leafplot", width = "100%", height = "500px")
+                                ),
+                                
+                                column(width = 4, align = "center",
+                                       plotOutput("VA_enr_by_type", height = "250px", width = "400px"),
+                                       tableOutput("enroll_table"),
+                                       plotOutput("FT_PT", height = "150px", width = "360px")
+                                )
+                                
+                              ),
+                              #fluidRow(
+                              # plotOutput("FT_PT", width = '100%')
+                              #),
+                              
+                              fluidRow(align="center",
+                                       print("Source: State Council of Higher Education for Virginia, 
+                            Tables LD03, E02, and FA31C")
+                              ),
+                              
+                              hr(),
+                              fluidRow(align="center",
+                                       h3(strong("In-State Undergraduate Demographic Trends")),
+                                       br()),
+                              fluidRow(align="center",
+                                       selectInput("hi_ed_type", "Higher-Education Type",
+                                                   choices = list("Grand Total, All Reporting Institutions",
+                                                                  "Total Private, Non-Profit, Four-Year Institutions",
+                                                                  "Total Public Four-Year Institutions",
+                                                                  "Total Public Two-Year Institutions"),
+                                                   
+                                                   selected = "Grand Total, All Reporting Institutions")),
+                              fluidRow( style = "margin: 20px;",
+                                        column(width = 6, plotOutput("race_eth", width = '100%', height = "450px")),
+                                        column(width = 6, plotOutput("gender", width = '100%'))),
+                              
+                              fluidRow(align="center", style = "margin: 20px;",
+                                       print("Source: State Council of Higher Education for Virginia, Table E02")
+                              )
+                              
+             )
+             
+    ),
+    
+    # FAFSA tab ----------------------------------------------------------
    
      tabPanel(h4("FAFSA Plots"),
-             fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
-                      column(2, img(src = "region-map.png", width = "100%")),
-                      column(1),
-                      column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA) 
+              
+              br(),
+              fluidRow(width = 12,
+                       #column(1),
+                       column(width=4, align="left",
+                              selectInput("faf_state", h4(strong("Select a State")),
+                                          choices = list("Iowa",
+                                                         "Virginia"
+                                          ),
+                                          selected = "Iowa")
+                       )
+              ),
+              
+              
+              conditionalPanel("input.faf_state == 'Iowa'", 
+                               
+                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
+                                        column(2, img(src = "IA/aea-map.jpg", width = "100%"),
+                                               p("Graphic Source: http://www.iowaaea.org/find-my-aea/")),
+                                        column(1),
+                                        column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
+                                                    over time for each high school by AEA Region. There is a line for each high school; high schools with
+                                                    greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines
+                                                    and identified in the table. Notched yellow box plots for each year display the median number of completed applications
+                                                    (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
+                                                    schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median.")),
+                                        column(1)),
+                               
+                               fluidRow(width = 12, style = "margin: 20px",
+                                        
+                                        navlistPanel(widths = c(2, 10),
+                                                     
+                                                     tabPanel("Central Rivers",
+                                                              
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10, h3(strong( "Central Rivers: Out of 51 high schools, 28 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Central Rivers High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("CR_table")
+                                                                              #tableHTML(`Central Rivers`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Central Rivers`))) %>% 
+                                                                              #  add_css_column(css = list('text-align', 'right'), columns = names(`Central Rivers`))
+                                                                       ),
+                                                                      column(1)
+                                                                      ),
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("CR", height = '700px')
+                                                              )
+                                                     ),
+                                                     
+                                                     
+                                                     tabPanel("Grant Wood",
+                                                              
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10, h3(strong( "Grant Wood: Out of 35 high schools, 22 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Grant Wood High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("GW_table")
+                                                                              #tableHTML(`Grant Wood`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Grant Wood`))) %>% 
+                                                                              #    add_css_column(css = list('text-align', 'right'), columns = names(`Grant Wood`)),
+                                                                       ), 
+                                                                      column(1)
+                                                                      ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("GW",height = '700px')
+                                                              )
+                                                     ),
+                                                     
+                                                     tabPanel("Great Prairie",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Great Prairie: Out of 31 high schools, 17 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Great Prairie High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(`Great Prairie`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Great Prairie`)))),
+                                                                              tableOutput("GP_table")
+                                                                              ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("GP", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     tabPanel("Green Hills",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Green Hills: Out of 43 high schools, 27 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Green Hills High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("GH_table")
+                                                                              #tableHTML(`Green Hills`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Green Hills`)))),
+                                                                       ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("GH", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     tabPanel("Heartland",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Heartland: Out of 55 high schools, 23 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Heartland High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("H_table")
+                                                                              #tableHTML(Heartland, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Heartland)))),
+                                                                       ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("H", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     tabPanel("Keystone",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Keystone: Out of 22 high schools, 12 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Keystone High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(Keystone, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Keystone)))),
+                                                                              tableOutput("K_table")
+                                                                              ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("K", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     tabPanel("Mississippi Bend",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Mississippi Bend: Out of 20 high schools, 12 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Mississippi Bend High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(`Mississippi Bend`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Mississippi Bend`)))),
+                                                                              tableOutput("MB_table")
+                                                                              ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("MB", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     tabPanel("Northwest",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Northwest: Out of 33 high schools, 15 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Northwest High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("N_table")
+                                                                              #tableHTML(Northwest, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Northwest)))),
+                                                                             ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("N", height = '700px')
+                                                              )
+                                                              
+                                                     ),
+                                                     
+                                                     tabPanel("Prairie Lakes",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Prairie Lakes: Out of 28 high schools, 17 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Prairie Lakes High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(`Prairie Lakes`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Prairie Lakes`)))),
+                                                                              tableOutput("PL_table")
+                                                                       ),
+                                                                      column(1)
+                                                              ),
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("PL", height = '700px')
+                                                              )
+                                                     )
+                                        )
+                               ),
+                               
+                               
+                               br(),
+                               fluidRow(width = 12,
+                                        column(2),
+                                        column(10, align = 'center', 
+                                               h3(strong('Relative Percent Difference of Completed FAFSA by County for 2019-20')))
+                                        #column(1)
+                               ),
+                               fluidRow(column(2),
+                                        column(10, align = "center", leafletOutput("IA_rel_fafsa", width = "90%", height = "500px"))
+                                        #column(1)
+                               )
+                               
+                               
+              ),
+                               
+              
+              conditionalPanel("input.faf_state == 'Virginia'",  
+                               
+                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
+                                        column(2, img(src = "region-map.png", width = "100%")),
+                                        column(1),
+                                        column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA) 
                                   over time for each high school by Superintendent Regions. There is a line for each high school; high schools with 
                                   greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines 
                                   and identified in the table. Notched yellow box plots for each year display the median number of completed applications 
                                   (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high 
                                   schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median.")),
-                      column(1)),
-             
-             fluidRow(width = 12, style = "margin: 20px", 
-                      
-                      navlistPanel(widths = c(2, 10),
-                                   
-                                   tabPanel("Region 1",
-                                            
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10, h3(strong( "Region 1: Out of 45 high schools, 32 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 1 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            
-                                                            tableHTML(region1, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region1)))),
-                                                     column(1)), 
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region1", height = '700px'))
-                                   ),
-                                   
-                                   
-                                   tabPanel("Region 2",
-                                            
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10, h3(strong( "Region 2: Out of 57 high schools, 44 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 2 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region2, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region2)))),
-                                                     column(1)), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region2",height = '700px'))),
-                                   
-                                   tabPanel("Region 3",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 3: Out of 23 high schools, 15 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 3 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region3, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region3)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region3", height = '700px'))
-                                            
-                                   ),
-                                   tabPanel("Region 4",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 4: Out of 81 high schools, 38 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 4 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region4, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region4)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region4", height = '700px'))
-                                            
-                                   ),
-                                   tabPanel("Region 5",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 5: Out of 35 high schools, 23 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 5 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region5, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region5)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region5", height = '700px'))
-                                            
-                                   ),
-                                   tabPanel("Region 6",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 6: Out of 29 high schools, 20 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 6 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region6, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region6)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region6", height = '700px'))
-                                            
-                                   ),
-                                   tabPanel("Region 7",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 7: Out of 39 high schools, 23 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 7 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region7, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region7)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region7", height = '700px'))
-                                            
-                                   ),
-                                   tabPanel("Region 8",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Region 8: Out of 13 high schools, 10 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Region 8 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(region8, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region8)))),
-                                                     column(1)
-                                            ), 
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("region8", height = '700px'))
-                                            
-                                   )
-                                   
-                      )
-                      
-             ), 
-             
-             br(),
-             fluidRow(width = 12,
-                      column(1),
-                      column(10, align = 'center', 
-                             h3(strong('Relative Percent Difference of Completed FAFSA by School Division for 2019-20'))),
-                      column(1)),
-             fluidRow(column(1),
-                      column(10, align = "center", leafletOutput("division", width = "100%", height = "700px")),
-                      column(1)
-             )
-             ),
-    
-    # IA high school tab -----------------------------------------------------------
-    
-    tabPanel(h4("Iowa High School Map"),
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(10, align = 'center',
-                             h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Iowa Counties and Cities'))),
-                      column(1)),
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(3, p("Iowa Area Education Agencies (AEA) Regions", align = "center"),
-                             tags$img(src = "IA/aea-map.jpg", width = "100%"),
-                             p("Graphic Source: http://www.iowaaea.org/find-my-aea/")
-                             ),
-                      column(4, align = "center", br(), br(), 
-                             tags$img(src = "IA/aea_barplot.png", width = "100%")),
-                      column(3, br(), br(), 
-                             p(tags$span(' Orange ', style = "background-color: orange; color: white;border-radius: 25px; white-space: pre-wrap;"),
-                               'circles locate public high schools; click on the circle to view data on the 2019-2020 seniors.'),
-                             p('Thick borders indicate AEA Regions.'),
-                             p(em('Please be patient as the map loads below.'))#,
-                             
-                      ),
-                      column(1)
-             ),
-             
-             br(),
-             
-             fluidRow(column(1),
-                      column(10, align = "center", leafletOutput("IA_hs_tab_map", width = "100%", height = "700px")),
-                      column(1)
-             ),
-             
-             br()),
-    
-    
-    # IA college tab ---------------------------------------
-    
-    tabPanel(h4("Iowa College Map"), 
-             fluidRow(width = 12, 
-                      column(12, align = "center", h3(strong("Higher-Education Graduate Plans by Locality")))
-             ),
-             
-             
-             fluidRow(width = 12,
-                      column(1),
-                      column(10, 
-                             
-                             p('Use the selectors to choose academic year and higher-education type. Hover over a county to show the 
-                               county name, and number of students planning to attend for the 
-                               year and higher-education type selected.'),
-                             p(tags$span(' Orange ', style = "background-color: #E69F00; color: white;border-radius: 25px; white-space: pre-wrap;"),  'circles locate public, four-year colleges.'),
-                             p(tags$span(' Green ', style = "background-color: #009E73; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate private, four-year colleges.'), 
-                             p(tags$span(' Pink ', style = "background-color: #CC79A7; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate community colleges.'), p("Click on circle to view college name and website.")
-                             ),
-                      column(1)
-                      ),
-             
-             br(),
-             
-             
-             
-             fluidRow(width = 12, 
-                      column(width =1),
-                      column(width = 3, align = "left",
-                             selectInput("IAwhichyear", "Academic Year",
-                                         choices = list(
-                                           "2018-2019",
-                                           "2017-2018",
-                                           "2016-2017",
-                                           "2015-2016"
-                                         ),
-                                         selected = "2018-2019")
-                      ),
-                      
-                      column(width=4, align="left",
-                             selectInput("IAwhichtype", "Higher-Education Type",
-                                         choices = list("All Institutions",
-                                                        "Private, Non-Profit, Four-Year Institutions",
-                                                        "Public Four-Year Institutions",
-                                                        "Community Colleges"
-                                         ),
-                                         selected = "All Institutions")
-                      ),
-                      
-                      column(width=4, align="center",
-                             h4(strong("Iowa Summary")),
-                             textOutput("IAyear"),
-                             tags$head(tags$style("#year{font-size: 20px}"))
-                             
-                      )
-                      
-             ),
-             
-             
-             fluidRow(
-               column(1),
-               column(width = 7, 
-                      leafletOutput("IAcolleges_map", width = "100%", height = "500px")
-               ),
-               
-               column(width = 4, align = "center",
-                      plotOutput("IAenroll_plot", height = "250px", width = "400px"),
-                      tableOutput("IAenroll_table")
-                      #plotOutput("FT_PT", height = "150px", width = "360px")
-               )
-               
-             ),
-             
-             
-             fluidRow(align="center",
-                      print("Source: Iowa Department of Education, Graduate Intentions Dataset")
-             )
-             
-    ),
-    
-    
-    
-    # IA FAFSA tab ----------------------------------------
-    
-    tabPanel(h4("Iowa FAFSA Plots"),
-             fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
-                      column(2, img(src = "IA/aea-map.jpg", width = "100%"),
-                             p("Graphic Source: http://www.iowaaea.org/find-my-aea/")),
-                      column(1),
-                      column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
-                                  over time for each high school by AEA Region. There is a line for each high school; high schools with
-                                  greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines
-                                  and identified in the table. Notched yellow box plots for each year display the median number of completed applications
-                                  (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
-                                  schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median.")),
-                      column(1)),
-             
-             fluidRow(width = 12, style = "margin: 20px",
-                      
-                      navlistPanel(widths = c(2, 10),
-                                   
-                                   tabPanel("Central Rivers",
-                                            
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10, h3(strong( "Central Rivers: Out of 51 high schools, 8 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Central Rivers High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            
-                                                            tableHTML(`Central Rivers`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Central Rivers`)))),
-                                                     column(1)),
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("CR", height = '700px')
-                                            )
-                                   ),
-                                   
-                                   
-                                   tabPanel("Grant Wood",
-                                            
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10, h3(strong( "Grant Wood: Out of 35 high schools, 4 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Grant Wood High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(`Grant Wood`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Grant Wood`)))),
-                                                     column(1)),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("GW",height = '700px')
-                                            )),
-                                   
-                                   tabPanel("Great Prairie",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Great Prairie: Out of 31 high schools, 4 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Great Prairie High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(`Great Prairie`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Great Prairie`)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("GP", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   tabPanel("Green Hills",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Green Hills: Out of 43 high schools, 8 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Green Hills High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(`Green Hills`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Green Hills`)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("GH", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   tabPanel("Heartland",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Heartland: Out of 55 high schools, 6 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Heartland High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(Heartland, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Heartland)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("H", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   tabPanel("Keystone",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Keystone: Out of 22 high schools, 2 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Keystone High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(Keystone, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Keystone)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("K", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   tabPanel("Mississippi Bend",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Mississippi Bend: Out of 20 high schools, 2 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Mississippi Bend High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(`Mississippi Bend`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Mississippi Bend`)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("MB", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   tabPanel("Northwest",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Northwest: Out of 33 high schools, 5 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Northwest High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(Northwest, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(Northwest)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("N", height = '700px')
-                                            )
-                                            
-                                   ),
-                                   
-                                   tabPanel("Prairie Lakes",
-                                            fluidRow(width =12,
-                                                     column(1),
-                                                     column(10,
-                                                            h3(strong( "Prairie Lakes: Out of 28 high schools, 2 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
-                                                            hr(),
-                                                            strong("Prairie Lakes High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
-                                                            p(),
-                                                            tableHTML(`Prairie Lakes`, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(`Prairie Lakes`)))),
-                                                     column(1)
-                                            ),
-                                            
-                                            fluidRow(width = 12, style = "margin: 20px",
-                                                     plotlyOutput("PL", height = '700px')
-                                            )
-                                            
-                                   )
-                                   
-                                   
-                      )
-                      
-             )),
-    
-    
+                                        column(1)),
+                               
+                               fluidRow(width = 12, style = "margin: 20px", 
+                                        
+                                        navlistPanel(widths = c(2, 10),
+                                                     
+                                                     tabPanel("Region 1",
+                                                              
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10, h3(strong( "Region 1: Out of 45 high schools, 32 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 1 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              tableOutput("R1_table")
+                                                                              #tableHTML(region1, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region1)))),
+                                                                       ),
+                                                                      column(1)), 
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region1", height = '700px'))
+                                                     ),
+                                                     
+                                                     
+                                                     tabPanel("Region 2",
+                                                              
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10, h3(strong( "Region 2: Out of 57 high schools, 44 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 2 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region2, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region2)))),
+                                                                              tableOutput("R2_table")),
+                                                                        column(1)), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region2",height = '700px'))),
+                                                     
+                                                     tabPanel("Region 3",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 3: Out of 23 high schools, 15 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 3 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region3, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region3)))),
+                                                                              tableOutput("R3_table")),
+                                                                      column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region3", height = '700px'))
+                                                              
+                                                     ),
+                                                     tabPanel("Region 4",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 4: Out of 81 high schools, 38 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 4 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region4, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region4)))),
+                                                                              tableOutput("R4_table")),
+                                                                       column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region4", height = '700px'))
+                                                              
+                                                     ),
+                                                     tabPanel("Region 5",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 5: Out of 35 high schools, 23 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 5 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region5, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region5)))),
+                                                                              tableOutput("R5_table")),
+                                                                       column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region5", height = '700px'))
+                                                              
+                                                     ),
+                                                     tabPanel("Region 6",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 6: Out of 29 high schools, 20 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 6 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region6, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region6)))),
+                                                                              tableOutput("R6_table")),
+                                                                       column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region6", height = '700px'))
+                                                              
+                                                     ),
+                                                     tabPanel("Region 7",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 7: Out of 39 high schools, 23 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 7 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region7, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region7)))),
+                                                                              tableOutput("R7_table")),
+                                                                       column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region7", height = '700px'))
+                                                              
+                                                     ),
+                                                     tabPanel("Region 8",
+                                                              fluidRow(width =12,
+                                                                       column(1),
+                                                                       column(10,
+                                                                              h3(strong( "Region 8: Out of 13 high schools, 10 had a decrease in completed FAFSA applications from 2019-20 to 2020-21; orange lines identify those high schools with a decrease of >25%.")),
+                                                                              hr(),
+                                                                              strong("Region 8 High Schools with greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21"),
+                                                                              p(),
+                                                                              #tableHTML(region8, border = 0, widths = c(250, 250, 250, 250), rownames = FALSE, headers = gsub("\\.", " ", colnames(region8)))),
+                                                                              tableOutput("R8_table")),
+                                                                       column(1)
+                                                              ), 
+                                                              
+                                                              fluidRow(width = 12, style = "margin: 20px",
+                                                                       plotlyOutput("region8", height = '700px'))
+                                                              
+                                                     )
+                                                     
+                                        )
+                                        
+                               ), 
+                               
+                               br(),
+                               fluidRow(width = 12,
+                                        column(2),
+                                        column(10, align = 'center', 
+                                               h3(strong('Relative Percent Difference of Completed FAFSA by School Division for 2019-20'))),
+                                        #column(1)
+                                        ),
+                               fluidRow(column(2),
+                                        column(10, align = "center", leafletOutput("division", width = "90%", height = "500px")),
+                                        #column(1)
+                               )
+              )
+     ),
     
     
     # data sources tab ---------------------------------------------------
@@ -1373,7 +1459,17 @@ ui <- fluidPage(
                                             completed FAFSAs among first-time filing applicants no older than 19 at the cutoff date who will have received their high school
                                             diploma by the start of the school year to which they are applying for aid. FAFSA Virginia data for the applications 
                                             processed by April 30th for the years 2015-16, 2016-2017, 2017-18, 2018-19, and 2019-20 were used in the dashboard, 
-                                            variables include school name, location, application submitted and applications completed.")))),
+                                            variables include school name, location, application submitted and applications completed.")))
+                      ),
+             
+             fluidRow(width = 12, style = "margin: 20px",
+                      column(3, align = "center", tags$a(href = "https://nces.ed.gov/ipeds/use-the-data" ,tags$img(src = "IA/ipeds.png", align = "top", width = '100%'))),
+                      column(9, wellPanel(p("...", tags$a(href = "https://nces.ed.gov/ipeds/use-the-data", tags$i("The Integrated Postsecondary Education Data System")), 
+                                            "... "), 
+                                          p("...")))
+             ),
+             
+             
              fluidRow(width = 12, style = "margin: 20px", h3(strong('State')), align = "center"),
              fluidRow(width = 12, style = "margin: 20px",
                       column(3, align = "center", tags$a(href = "https://p1pe.doe.virginia.gov/apex/f?p=180:1:12869447590039:::::", tags$img(
@@ -1404,7 +1500,15 @@ ui <- fluidPage(
                                             for all students at time of admission, were downloaded from table LD03. Percentage of fall undergraduates who received PELL, based on the reported locality (county or city), 
                                             were downloaded from table FA31C. Fall undergraduate enrollment status (full-time or part-time), race/ethnicity, and gender 
                                             were downloaded from table E02.')))
-                                          )),
+                                          ),
+             
+             fluidRow(width = 12, style = "margin: 20px",
+                      column(3, align = "center", tags$a(href = "https://educateiowa.gov/data-and-reporting/education-statistics", tags$img(src = "IA/IA_doe.jpg", width = '40%'))),
+                      column(9, wellPanel(p('The', tags$a(href = "https://educateiowa.gov/data-and-reporting/education-statistics", tags$i('Iowa Department of Education')), '...."'),
+                                          p('...')))
+             )
+             
+             ),
     tabPanel(h4("Data Downloads"),
              fluidRow(width = 12, style = "margin: 20px",
                       fluidRow(
@@ -1499,8 +1603,6 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   
-  
-  
   output$data_downloads <- DT::renderDataTable({
     DT::datatable(data_download[,-c(1,4, 7, 31, 32)] ,
                   
@@ -1517,45 +1619,143 @@ server <- function(input, output, session) {
   })
   
 
-  
+  # VA high school map server fcn ---------------------------------------------------
   
   hs_map <- reactive({
     if (input$showPoints){
     leaflet(data = superintendent, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>% 
-        setView(zoom = 7.5, lat = 38.032560, lng = -79.422777
+        setView(zoom = 6.5, lat = 38.032560, lng = -79.422777
         ) %>%
-        addTiles() %>%
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 1, fillColor = ~pal(virginia$CO_Per), fillOpacity = .8) %>%
-        addPolylines(color = "#5A5766", weight = 5, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 1, fillOpacity = 0, label = ~ virginia$County)%>%
-        addCircleMarkers(data = hs, radius = 7, fillColor = "orange", fillOpacity = 0.2, stroke = TRUE, color = "orange", opacity = 1, weight = 1,  popup= labels)%>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillColor = ~VA_fpal(virginia$CO_Per), fillOpacity = .8) %>%
+        addPolylines(color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0, label = ~ virginia$County)%>%
+        addCircleMarkers(data = hs, radius = 5, fillColor = "orange", fillOpacity = 0.6, stroke = TRUE, color = "orange", opacity = 0.6, weight = 1,  popup= labels)%>%
         setMapWidgetStyle(list(background= "transparent"))  %>%
-        addLegend("bottomleft", pal = pal, values = ~virginia$bins,
-                  title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
+        # addLegend("bottomleft", pal = VA_fpal, values = ~virginia$bins,
+        #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
+      addLegend("bottomleft",
+                pal = VA_fpal,
+                values =  ~round(virginia$CO_Per, 0),
+                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                opacity = 0.7,
+                na.label = "Not Available",
+                labFormat = function(type, cuts, p) {
+                  n = length(cuts)
+                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                })
       
     } else {
       leaflet(data = superintendent, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>% 
-        setView(zoom = 7.5, lat = 38.032560, lng = -79.422777
+        setView(zoom = 6.5, lat = 38.032560, lng = -79.422777
         ) %>%
-        addTiles() %>%
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 1, fillColor = ~pal(virginia$CO_Per), fillOpacity = .8) %>%
-        addPolylines(color = "#5A5766", weight = 5, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 1, fillOpacity = 0, label = ~ virginia$County)%>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillColor = ~VA_fpal(virginia$CO_Per), fillOpacity = .8) %>%
+        addPolylines(color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0, label = ~ virginia$County)%>%
         setMapWidgetStyle(list(background= "transparent"))  %>%
-        addLegend("bottomleft", pal = pal, values = ~virginia$bins,
-                  title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
+        # addLegend("bottomleft", pal = VA_fpal, values = ~virginia$bins,
+        #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
+        addLegend("bottomleft",
+                pal = VA_fpal,
+                values =  ~round(virginia$CO_Per, 0),
+                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                opacity = 0.7,
+                na.label = "Not Available",
+                labFormat = function(type, cuts, p) {
+                  n = length(cuts)
+                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                })
      
     }
   })
-  
-
+ 
   output$mymap1 <- renderLeaflet({
+    
     hs_map()
     })
   
-  output$IA_hs_tab_map <- renderLeaflet({
-    m
+  
+  # IA hs map server code -----------------------------------------------------
+  
+  IA_hs_map <- reactive({
+    if (input$IAshowPoints){
+      leaflet(data = IA_fafsa_by_county, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addPolygons(color = "#5A5766", weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
+                    fillColor = ~IA_fpal(perc_complete_20), fillOpacity = .8) %>%
+        addPolylines(data = IA_aea, color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, 
+                     opacity = 1) %>%
+        addPolygons(color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
+                    fillOpacity = 0, label = IA_co_labels,
+                    labelOptions = labelOptions(direction = "top",
+                                                style = list("font-size" = "12px",
+                                                             "border-color" = "rgba(0,0,0,0.5)",
+                                                              "text-align" = "left",
+                                                             direction = "auto"
+                                               ))
+        )%>%
+        addCircleMarkers(data = IA_hs_fafsa, radius = 5, fillColor = "orange", fillOpacity = 0.6, 
+                         stroke = TRUE, color = "orange", opacity = 0.6, weight = 1,
+                         popup= IA_hs_labels) %>%
+        setMapWidgetStyle(list(background= "transparent"))  %>%
+        addLegend("bottomleft",
+                pal = IA_fpal,
+                values =  ~round(perc_complete_20, 0),
+                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                opacity = 0.7,
+                na.label = "Not Available",
+                labFormat = function(type, cuts, p) {
+                  n = length(cuts)
+                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                })
+      
+      
+    } else {
+      leaflet(data = IA_fafsa_by_county, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
+        addProviderTiles(providers$CartoDB.Positron) %>%
+        addPolygons(color = "#5A5766", weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
+                    fillColor = ~IA_fpal(perc_complete_20), fillOpacity = .8) %>%
+        addPolylines(data = IA_aea, color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, 
+                     opacity = 1) %>%
+        addPolygons(color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7,
+                    fillOpacity = 0, label = IA_co_labels,
+                    labelOptions = labelOptions(direction = "top",
+                                                style = list("font-size" = "12px",
+                                                             "border-color" = "rgba(0,0,0,0.5)",
+                                                             "text-align" = "left",
+                                                             direction = "auto"
+                                                ))
+        )%>%
+        # addCircleMarkers(data = IA_hs_fafsa, radius = 5, fillColor = "orange", fillOpacity = 0.6, 
+        #                  stroke = TRUE, color = "orange", opacity = 0.6, weight = 1,
+        #                  popup= IA_hs_labels) %>%
+        setMapWidgetStyle(list(background= "transparent"))  %>%
+        addLegend("bottomleft",
+                  pal = IA_fpal,
+                  values =  ~round(perc_complete_20, 0),
+                  title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                  opacity = 0.7,
+                  na.label = "Not Available",
+                  labFormat = function(type, cuts, p) {
+                    n = length(cuts)
+                    paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  })
+      
+    }
   })
+  
+  
+  
+  output$IA_hs_tab_map <- renderLeaflet({
+    
+    IA_hs_map()
+    
+  })
+  
+  
+  # relative fafsa maps ----------------------------------------------
+  
   
   output$division <- renderLeaflet({
     
@@ -1568,12 +1768,13 @@ server <- function(input, output, session) {
     
     
     leaflet(division, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
-      setView(zoom = 7.5, lat = 38.032560, lng = -79.422777) %>%
-      addTiles() %>%
+      setView(zoom = 6, lat = 38.032560, lng = -79.422777) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
       addPolygons(fillColor =  ~pal(bin), color = "black", opacity = 1, weight = 1, fillOpacity = .8,  label = label_division, 
-                  labelOptions = labelOptions(direction = "bottom",           
+                  labelOptions = labelOptions(direction = "top",           
                                               style = list(
                                                 "font-size" = "12px",
+                                                "text-align" = "left",
                                                 direction = "auto"))) %>%
       setMapWidgetStyle(list(background= "transparent"))  %>%
       addLegend("bottomleft", pal = pal, values = ~bin,
@@ -1581,6 +1782,35 @@ server <- function(input, output, session) {
     
     
   })
+  
+  output$IA_rel_fafsa <- renderLeaflet({
+    
+    test <- colorRampPalette( c("#D94801","#F9F1CB", "#084594"))(9)
+    
+    test <- test[-9]
+    
+    pal <- colorBin(palette = test, domain = IA_fafsa_by_county$pct_rel_diff, bins = 8)
+    show_col(test)
+    
+    
+    leaflet(IA_fafsa_by_county, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPolygons(fillColor =  ~pal(pct_rel_diff), color = "black", opacity = 1, weight = 1, 
+                  stroke = TRUE, smoothFactor = 0.7,
+                  fillOpacity = .8,  label = IA_relfaf_labels, 
+                  labelOptions = labelOptions(direction = "top",           
+                                              style = list(
+                                                "font-size" = "12px",
+                                                "text-align" = "left",
+                                                direction = "auto"))) %>%
+      setMapWidgetStyle(list(background= "transparent"))  %>%
+      addLegend("bottomleft", pal = pal, values = ~pct_rel_diff,
+                title = "Relative Percent Difference 2019-20", opacity = 1)
+    
+    
+  })
+  
+  
   
   
   output$region1 <- renderPlotly({
@@ -1616,6 +1846,8 @@ server <- function(input, output, session) {
     ly8
     
   })
+  
+  # VA college map ------------------------------------------------------------------
   
   output$leafplot <- renderLeaflet({
     
@@ -1716,12 +1948,12 @@ server <- function(input, output, session) {
     
     leaflet(data = selected_year,  options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       setView(zoom = 6, lat = 38.032560, lng = -79.422777) %>%
-      addTiles() %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
       addPolygons(fillColor = ~pal(selected_type), 
                   fillOpacity = 0.8,
                   stroke = TRUE,
                   weight = 0.9,
-                  color = "gray",
+                  color = "#5A5766",
                   smoothFactor = 0.7,
                   layerId = ~COUNTYFP,
                   label = labels,
@@ -1731,7 +1963,7 @@ server <- function(input, output, session) {
                                                 "border-color" = "rgba(0,0,0,0.5)",
                                                 direction = "auto"
                                               ))) %>%
-      addCircleMarkers(data = colleges, radius = 7, fillColor = ~collegeColor(colleges$Type), fillOpacity = 0.4, stroke = TRUE, color =  ~collegeColor(colleges$Type), opacity = 1, weight = 1,  popup= label3)%>%
+      addCircleMarkers(data = colleges, radius = 5, fillColor = ~collegeColor(colleges$Type), fillOpacity = 0.7, stroke = TRUE, color =  ~collegeColor(colleges$Type), opacity = 0.7, weight = 1,  popup= label3)%>%
       addLegend(position = "bottomleft",
                 values = ~(round(selected_type, 0)),
                 colors = brewer.pal(8, "Blues"), #c("#FFFFB2", "#FECC5C", "#FD8D3C", "#F03B20", "#BD0026"),
@@ -2090,12 +2322,12 @@ server <- function(input, output, session) {
     
     leaflet(data = selected_year) %>%  #,  options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       #setView(zoom = 6, lat = 38.032560, lng = -79.422777) %>%
-      addTiles() %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
       addPolygons(fillColor = ~pal(selected_type), 
                   fillOpacity = 0.8,
                   stroke = TRUE,
                   weight = 0.9,
-                  color = "gray",
+                  color = "#5A5766",
                   smoothFactor = 0.7,
                   #layerId = ~county_name,
                   label = labels,
@@ -2105,9 +2337,9 @@ server <- function(input, output, session) {
                                                 "border-color" = "rgba(0,0,0,0.5)",
                                                 direction = "auto"
                                               ))) %>%
-      addCircleMarkers(data = IA_colleges, radius = 7, fillColor = ~collegeColor(IA_colleges$Sector), 
-                       fillOpacity = 0.4, stroke = TRUE, color =  ~collegeColor(IA_colleges$Sector), 
-                       opacity = 1, weight = 1,  popup= label3)%>%
+      addCircleMarkers(data = IA_colleges, radius = 5, fillColor = ~collegeColor(IA_colleges$Sector), 
+                       fillOpacity = 0.7, stroke = TRUE, color =  ~collegeColor(IA_colleges$Sector), 
+                       opacity = 0.7, weight = 1,  popup= label3)%>%
       addLegend(position = "bottomleft",
                 values = ~(round(selected_type, 0)),
                 colors = brewer.pal(8, "Blues"), #c("#FFFFB2", "#FECC5C", "#FD8D3C", "#F03B20", "#BD0026"),
@@ -2203,6 +2435,91 @@ server <- function(input, output, session) {
     s
     
   })
+  
+  output$CR_table <- renderTable({
+     
+    `Central Rivers`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+   )
+  
+  output$GW_table <- renderTable({
+    
+    `Grant Wood`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$GP_table <- renderTable({
+    
+    `Great Prairie`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$GH_table <- renderTable({
+    
+    `Green Hills`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$H_table <- renderTable({
+    
+    `Heartland`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$K_table <- renderTable({
+    
+    `Keystone`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$MB_table <- renderTable({
+    
+    `Mississippi Bend`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$N_table <- renderTable({
+    
+    `Northwest`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$PL_table <- renderTable({
+    
+    `Prairie Lakes`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R1_table <- renderTable({
+    
+    `region1`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R2_table <- renderTable({
+    
+    `region2`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R3_table <- renderTable({
+    
+    `region3`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R4_table <- renderTable({
+    
+    `region4`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R5_table <- renderTable({
+    
+    `region5`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R6_table <- renderTable({
+    
+    `region6`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R7_table <- renderTable({
+    
+    `region7`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
+  
+  output$R8_table <- renderTable({
+    
+    `region8`}, align = c('lccc'), rownames = FALSE, bordered = TRUE, spacing = "xs"
+  )
   
   
 }
