@@ -1053,35 +1053,42 @@ ui <- fluidPage(
               
               br(),
               fluidRow(width = 12,
-                       #column(1),
-                       column(width=4, align="left",
+                       column(width=2, align="center",
                               selectInput("faf_state", h4(strong("Select a State")),
                                           choices = list("Iowa",
                                                          "Virginia"
                                           ),
-                                          selected = "Iowa")
-                       )
-              ),
-              
-              
-              conditionalPanel("input.faf_state == 'Iowa'", 
-                               
-                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
-                                        column(2, img(src = "IA/aea-map.jpg", width = "100%"),
-                                               p("Graphic Source: http://www.iowaaea.org/find-my-aea/")),
-                                        column(1),
-                                        column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
+                                          selected = "Iowa"),
+                              
+                              conditionalPanel("input.faf_state == 'Iowa'", 
+                                               
+                                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
+                                                        img(src = "IA/aea-map.jpg", width = "100%"),
+                                                               p("Graphic Source: http://www.iowaaea.org/find-my-aea/"))),
+                              conditionalPanel("input.faf_state == 'Virginia'", 
+                                               
+                                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
+                                                        img(src = "region-map.png", width = "100%")))
+                              
+                       ),column(1),
+                       column(width = 8, align = "left",br(),
+                              p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
                                                     over time for each high school by AEA Region. There is a line for each high school; high schools with
                                                     greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines
                                                     and identified in the table. Notched yellow box plots for each year display the median number of completed applications
                                                     (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
                                                     schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median."),
-                                                  p("How to interpret the data: Applicants can submit FAFSA over an 18-month period for each school year. For example, 
+                              p("How to interpret the data: Applicants can submit FAFSA over an 18-month period for each school year. For example, 
                                                     the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. In order to 
                                                     make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each school 
                                                     year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
                                                     applications through April 30th of the first award year.")),
-                                        column(1)),
+                       column(1)
+              ),
+              
+              
+              conditionalPanel("input.faf_state == 'Iowa'", 
+                         
                                
                                fluidRow(width = 12, style = "margin: 20px",
                                         
@@ -1282,21 +1289,6 @@ ui <- fluidPage(
               
               conditionalPanel("input.faf_state == 'Virginia'",  
                                
-                               fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
-                                        column(2, img(src = "region-map.png", width = "100%")),
-                                        column(1),
-                                        column(8, p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA) 
-                                  over time for each high school by Superintendent Regions. There is a line for each high school; high schools with 
-                                  greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines 
-                                  and identified in the table. Notched yellow box plots for each year display the median number of completed applications 
-                                  (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high 
-                                  schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median."),
-                                               p("How to interpret the data: Applicants can submit FAFSA over an 18-month period for each school year. For example, 
-                                                    the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. In order to 
-                                                    make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each school 
-                                                    year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
-                                                    applications through April 30th of the first award year.")),
-                                        column(1)),
                                
                                fluidRow(width = 12, style = "margin: 20px", 
                                         
@@ -1955,15 +1947,13 @@ server <- function(input, output, session) {
     
     
     
-    pal <- colorBin("Blues", domain = selected_type, 
-                    bins = c(0, 250, 500, 1000, 2500, 5000, 10000, 20000, 50000)) #bins = 8)
     
     labels <- lapply(
       paste("<strong>County: </strong>",
             selected_year$NAME,
             "<br />",
             "<strong># of Students: </strong>",
-            comma(selected_type, format="f"),
+            comma(selected_type, accuracy = 1),
             "<br />",
             "<strong>% of Fall Students Who Received PELL: </strong>",
             substr(selected_pell, start=1, stop=2),
@@ -1985,6 +1975,8 @@ server <- function(input, output, session) {
     
     collegeColor <- colorFactor(palette = c("#E69F00", "#009E73", "#CC79A7"), levels = c(1,2,4))
     
+    pal <- colorQuantile(palette ="Blues", domain = selected_type, probs = seq(0, 1, length = 6), 
+                             na.color = 'gray', right = FALSE)
     
     leaflet(data = selected_year,  options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       setView(zoom = 6, lat = 38.032560, lng = -79.422777) %>%
@@ -2004,13 +1996,19 @@ server <- function(input, output, session) {
                                                 direction = "auto"
                                               ))) %>%
       addCircleMarkers(data = colleges, radius = 5, fillColor = ~collegeColor(colleges$Type), fillOpacity = 0.7, stroke = TRUE, color =  ~collegeColor(colleges$Type), opacity = 0.7, weight = 1,  popup= label3)%>%
-      addLegend(position = "bottomleft",
+      addLegend(
+        pal = pal, 
+        position = "bottomleft",
                 values = ~(round(selected_type, 0)),
-                colors = brewer.pal(8, "Blues"), #c("#FFFFB2", "#FECC5C", "#FD8D3C", "#F03B20", "#BD0026"),
-                labels = c("0-250", "251-500", "501-1,000", "1,001-2,500", "2,501-5,000",
-                           "5,001-10,000", "10,001-20,000", "20,001+"),
+                #colors = brewer.pal(8, "Blues"), #c("#FFFFB2", "#FECC5C", "#FD8D3C", "#F03B20", "#BD0026"),
+                #labels = c("0-250", "251-500", "501-1,000", "1,001-2,500", "2,501-5,000",
+                #           "5,001-10,000", "10,001-20,000", "20,001+"),
                 title = "Number of Students",
-                opacity = 1)
+                opacity = 1,
+                labFormat = function(type, cuts, p) {
+                  n = length(cuts)
+                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                })
     
   })
   
@@ -2324,8 +2322,8 @@ server <- function(input, output, session) {
                             "Community Colleges" = selected_year$cc)
     
     
-    pal <- colorBin("Blues", domain = selected_type, 
-                    bins = c(0, 25, 50, 100, 200, 300, 500, 1000, 4000)) #bins = 8)
+    pal <- colorQuantile(palette ="Blues", domain = selected_type, probs = seq(0, 1, length = 6), 
+                         na.color = 'gray', right = FALSE)
     
     labels <- lapply(
       paste("<strong>County: </strong>",
@@ -2380,13 +2378,16 @@ server <- function(input, output, session) {
       addCircleMarkers(data = IA_colleges, radius = 5, fillColor = ~collegeColor(IA_colleges$Sector), 
                        fillOpacity = 0.7, stroke = TRUE, color =  ~collegeColor(IA_colleges$Sector), 
                        opacity = 0.7, weight = 1,  popup= label3)%>%
-      addLegend(position = "bottomleft",
-                values = ~(round(selected_type, 0)),
-                colors = brewer.pal(8, "Blues"), #c("#FFFFB2", "#FECC5C", "#FD8D3C", "#F03B20", "#BD0026"),
-                labels = c("0-25", "25-50", "50-100", "100-200", "200-300",
-                           "300-500", "500-1,000", "1,001+"),
-                title = "Number of Students",
-                opacity = 1)
+      addLegend(
+        pal = pal, 
+        position = "bottomleft",
+        values = ~(round(selected_type, 0)),
+        title = "Number of Students",
+        opacity = 1,
+        labFormat = function(type, cuts, p) {
+          n = length(cuts)
+          paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+        })
     
   })
   
