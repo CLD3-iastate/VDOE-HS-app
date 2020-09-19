@@ -28,7 +28,8 @@ data_download$DIS12 <- formatC(round(as.numeric(as.character(data_download$DIS12
 df <- readRDS("data/VA/hi_ed_acs.rds")  
 hi_ed <- df[c(1,2,9,14:54)]
 
-colleges<- st_read("data/VA/colleges/colleges.shp")
+#colleges<- st_read("data/VA/colleges/colleges.shp")
+colleges<- readRDS("data/VA/college_loc.rds")
 
 demo_df <- read_excel("data/VA/Demo.xlsx", col_names = TRUE)
 
@@ -1817,17 +1818,14 @@ server <- function(input, output, session) {
   
   output$IA_rel_fafsa <- renderLeaflet({
     
-    test <- colorRampPalette( c("#D94801","#F9F1CB", "#084594"))(9)
+    IAtest <- colorRampPalette( c("#D94801","#F9F1CB", "#084594"))(9)
     
-    test <- test[-9]
-    
-    pal <- colorBin(palette = test, domain = IA_fafsa_by_county$pct_rel_diff, bins = 8)
-    show_col(test)
+    IA_pal <- colorFactor(palette = IAtest, domain = IA_fafsa_by_county$prd_bins)
     
     
     leaflet(IA_fafsa_by_county, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addPolygons(fillColor =  ~pal(pct_rel_diff), color = "black", opacity = 1, weight = 1, 
+      addPolygons(fillColor =  ~IA_pal(prd_bins), color = "black", opacity = 1, weight = 1, 
                   stroke = TRUE, smoothFactor = 0.7,
                   fillOpacity = .8,  label = IA_relfaf_labels, 
                   labelOptions = labelOptions(direction = "top",           
@@ -1836,7 +1834,7 @@ server <- function(input, output, session) {
                                                 "text-align" = "left",
                                                 direction = "auto"))) %>%
       setMapWidgetStyle(list(background= "transparent"))  %>%
-      addLegend("bottomleft", pal = pal, values = ~pct_rel_diff,
+      addLegend("bottomleft", pal = IA_pal, values = ~prd_bins,
                 title = "Relative Percent Difference 2019-20", opacity = 1)
     
     
@@ -1963,11 +1961,11 @@ server <- function(input, output, session) {
     
     label3 <- lapply(
       paste("<strong>College Name: </strong>",
-            colleges$Cllg_Nm,
+            colleges$College.Name,
             "<br />",
             "<strong>Website: </strong>", 
-            colleges$Website
-            
+            paste("<a href = ","https://", paste(colleges$Website), " >", sep = ""),
+            colleges$Website, paste("</a>")
       ),
       htmltools::HTML
     )
