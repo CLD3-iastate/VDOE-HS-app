@@ -15,6 +15,7 @@ library(plotly)
 library(GGally)
 library(ggrepel)
 library(DT)
+library(shinyjs)
 
 source("IA_parcoords.R")
 
@@ -719,11 +720,28 @@ IA_fpal <- colorQuantile("Blues", domain = IA_fafsa_by_county$perc_complete_20, 
 VA_fpal <- colorQuantile(palette ="Blues", domain = virginia$CO_Per, probs = seq(0, 1, length = 6), 
                          na.color = 'gray', right = FALSE)
 
+
+jscode <- "var referer = document.referrer;
+           var n = referer.includes('datascience');
+           var x = document.getElementsByClassName('logo');
+           if (n == true) {
+             x[0].innerHTML = '<a href=\"https://datascienceforthepublicgood.org/events/symposium2020/poster-sessions\">' +
+                              '<img src=\"DSPG_black-01.png\", alt=\"DSPG 2020 Symposium Proceedings\", style=\"height:82px;\">' +
+                             '</a>';
+           } else {
+             x[0].innerHTML = '<a href=\"https://datascienceforthepublicgood.org/economic-mobility/community-insights\">' +
+                              '<img src=\"AEMLogoGatesColorsBlack-11.png\", alt=\"Gates Economic Mobility Case Studies\", style=\"height:82px;\">' +
+                              '</a>';
+           }
+           "
+
+
 #
 # ui -----------------------------------------------------------------------------------------
 #
 
 ui <- fluidPage(
+  useShinyjs(),
   theme = shinytheme("cosmo"),
   
   tags$style(type = "text/css", ".recalculating {opacity: 1.0;}"),
@@ -734,11 +752,15 @@ ui <- fluidPage(
   ),
   tags$head(tags$style(HTML(" .sidebar { font-size: 40%; } "))),
   
-  headerPanel(
-    #tags$a(href = "https://biocomplexity.virginia.edu/social-decision-analytics", 
-    img(src = "Marks_wave_bolder-15.jpg", 
-        class = "topimage", width = "50%", style = "display: block; margin-left: auto; margin-right: auto;" #)
-    )),
+  # headerPanel(
+  #   #tags$a(href = "https://biocomplexity.virginia.edu/social-decision-analytics", 
+  #   title = "COVID-19 Impact"
+  #   # img(src = "Marks_wave_bolder-15.jpg", 
+  #   #     class = "topimage", width = "50%", style = "display: block; margin-left: auto; margin-right: auto;" #)
+  #   # )
+  #   ),
+  
+  div(class = "logo", style = "margin-top: 30px; margin-bottom: -20px; text-align: center"),
   hr(),
   
   fluidRow(width = 12,style = "margin = 20px",  column(12, align = "center", h2(strong("COVID-19 Impact on High School Seniors and College Students")))),
@@ -1624,7 +1646,8 @@ ui <- fluidPage(
 # server-----------------------------------------------------------------------------------------
 
 server <- function(input, output, session) {
-  
+  # Run JavaScript Code
+  runjs(jscode)
   
   output$data_downloads <- DT::renderDataTable({
     DT::datatable(data_download[,-c(1,4, 7, 31, 32)] ,
