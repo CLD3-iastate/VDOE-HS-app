@@ -786,13 +786,12 @@ ui <- fluidPage(
   fluidRow(width = 12,
            column(1),
            column(10, 
-                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period 
-                                                for each school year. For example, the FAFSA for the 2020-2021 award year 
-                                                is available from January 1, 2020 through June 30, 2021. In order to make 
-                                                comparisons over the years and evaluate the impact of COVID-19, the data 
-                                                displayed for each school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 
-                                                2019-2020, 2020-2021, are the number of completed applications through July 31st (Iowa)
-                                                or April 30th (Virginia) of the first award year.")
+                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for each school year.
+                    For example, the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. 
+                    In order to make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each 
+                    school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
+                    applications through April 30th of the first award year for Virginia and the number of completed applications 
+                    through July 31st of the first award year for Iowa.")
            ),
            column(1)
   ),
@@ -800,10 +799,11 @@ ui <- fluidPage(
   
   fluidRow(width = 12,
            column(1),
-           column(10, 
-                  p("The number of completed FAFSA applications are displayed: 
-                    •	for each high school over time using parallel coordinate plots and identified Region; and
-                    •	by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+           column(10, p("The number of completed FAFSA applications are displayed: "),
+                  tags$ul(
+                    tags$li("for each high school over time using parallel coordinate plots and identified Region; and"),
+                    tags$li("by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+                  )
            ),
            column(1)
   ),
@@ -1614,9 +1614,9 @@ ui <- fluidPage(
     tabPanel(h4("Resources"),
              
              fluidRow(width = 12, style = "margin: 20px", 
-                      p("Resources are provided to help",br(), 
-                        HTML("&nbsp;&nbsp;&nbsp;&nbsp"), "· with the financial aid appeals process and", br(),
-                        HTML("&nbsp;&nbsp;&nbsp;&nbsp"), "· understand the impact of COVID-19 on high school and college students."),
+                      p("Resources are provided to help"), 
+                      tags$ul(tags$li("with the financial aid appeals process and"),
+                              tags$li("understand the impact of COVID-19 on high school and college students.")),
                       br(), 
                       fluidRow(width = 12, 
                                column(3, align = "center", tags$a(href = "https://www.newamerica.org/education-policy/reports/highered-polling-dashboard/?utm_medium=email&utm_campaign=EdCentral%20555&utm_content=EdCentral%20555+CID_b49307ca85778bf8c66db275b7075f88&utm_source=Campaign%20Monitor%20Newsletters&utm_term=HigherEd%20Polling%20Dashboard", 
@@ -1727,13 +1727,13 @@ server <- function(input, output, session) {
         #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
       addLegend("bottomleft",
                 pal = VA_fpal,
-                values =  ~round(virginia$CO_Per, 0),
+                values =  ~(virginia$CO_Per),
                 title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 1), " &ndash; ", round(cuts[-1], 1), ")")
                 })
       
     } else {
@@ -1754,13 +1754,13 @@ server <- function(input, output, session) {
         #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
         addLegend("bottomleft",
                 pal = VA_fpal,
-                values =  ~round(virginia$CO_Per, 0),
+                values =  ~(virginia$CO_Per),
                 title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 1), " &ndash; ", round(cuts[-1], 1), ")")
                 })
      
     }
@@ -2068,7 +2068,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
                 })
     
   })
@@ -2447,7 +2447,7 @@ server <- function(input, output, session) {
         opacity = 1,
         labFormat = function(type, cuts, p) {
           n = length(cuts)
-          paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+          paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
         })
     
   })
