@@ -800,10 +800,11 @@ ui <- fluidPage(
   
   fluidRow(width = 12,
            column(1),
-           column(10, 
-                  p("The number of completed FAFSA applications are displayed: 
-                    •	for each high school over time using parallel coordinate plots and identified Region; and
-                    •	by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+           column(10, p("The number of completed FAFSA applications are displayed: "),
+                  tags$ul(
+                    tags$li("for each high school over time using parallel coordinate plots and identified Region; and"),
+                    tags$li("by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+                  )
            ),
            column(1)
   ),
@@ -1614,9 +1615,9 @@ ui <- fluidPage(
     tabPanel(h4("Resources"),
              
              fluidRow(width = 12, style = "margin: 20px", 
-                      p("Resources are provided to help",br(), 
-                        HTML("&nbsp;&nbsp;&nbsp;&nbsp"), "· with the financial aid appeals process and", br(),
-                        HTML("&nbsp;&nbsp;&nbsp;&nbsp"), "· understand the impact of COVID-19 on high school and college students."),
+                      p("Resources are provided to help"), 
+                      tags$ul(tags$li("with the financial aid appeals process and"),
+                              tags$li("understand the impact of COVID-19 on high school and college students.")),
                       br(), 
                       fluidRow(width = 12, 
                                column(3, align = "center", tags$a(href = "https://www.newamerica.org/education-policy/reports/highered-polling-dashboard/?utm_medium=email&utm_campaign=EdCentral%20555&utm_content=EdCentral%20555+CID_b49307ca85778bf8c66db275b7075f88&utm_source=Campaign%20Monitor%20Newsletters&utm_term=HigherEd%20Polling%20Dashboard", 
