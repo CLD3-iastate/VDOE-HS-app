@@ -786,13 +786,12 @@ ui <- fluidPage(
   fluidRow(width = 12,
            column(1),
            column(10, 
-                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period 
-                                                for each school year. For example, the FAFSA for the 2020-2021 award year 
-                                                is available from January 1, 2020 through June 30, 2021. In order to make 
-                                                comparisons over the years and evaluate the impact of COVID-19, the data 
-                                                displayed for each school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 
-                                                2019-2020, 2020-2021, are the number of completed applications through July 31st (Iowa)
-                                                or April 30th (Virginia) of the first award year.")
+                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for each school year.
+                    For example, the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. 
+                    In order to make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each 
+                    school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
+                    applications through April 30th of the first award year for Virginia and the number of completed applications 
+                    through July 31st of the first award year for Iowa.")
            ),
            column(1)
   ),
