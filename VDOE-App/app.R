@@ -1728,13 +1728,13 @@ server <- function(input, output, session) {
         #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
       addLegend("bottomleft",
                 pal = VA_fpal,
-                values =  ~round(virginia$CO_Per, 0),
+                values =  ~(virginia$CO_Per),
                 title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 1), " &ndash; ", round(cuts[-1], 1), ")")
                 })
       
     } else {
@@ -1755,13 +1755,13 @@ server <- function(input, output, session) {
         #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
         addLegend("bottomleft",
                 pal = VA_fpal,
-                values =  ~round(virginia$CO_Per, 0),
+                values =  ~(virginia$CO_Per),
                 title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 1), " &ndash; ", round(cuts[-1], 1), ")")
                 })
      
     }
@@ -2069,7 +2069,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+                  paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
                 })
     
   })
@@ -2448,7 +2448,7 @@ server <- function(input, output, session) {
         opacity = 1,
         labFormat = function(type, cuts, p) {
           n = length(cuts)
-          paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+          paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
         })
     
   })
