@@ -782,6 +782,32 @@ ui <- fluidPage(
                     that have seen a decrease in completed applications that may be attributed to COVID-19 pandemic.  
                     We further identifity a potential', em('brain gain'), 'across the state, the home counties of young adults that attend colleges across the state.')),
            column(1)),
+  
+  fluidRow(width = 12,
+           column(1),
+           column(10, 
+                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period 
+                                                for each school year. For example, the FAFSA for the 2020-2021 award year 
+                                                is available from January 1, 2020 through June 30, 2021. In order to make 
+                                                comparisons over the years and evaluate the impact of COVID-19, the data 
+                                                displayed for each school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 
+                                                2019-2020, 2020-2021, are the number of completed applications through July 31st (Iowa)
+                                                or April 30th (Virginia) of the first award year.")
+           ),
+           column(1)
+  ),
+  
+  
+  fluidRow(width = 12,
+           column(1),
+           column(10, 
+                  p("The number of completed FAFSA applications are displayed: 
+                    •	for each high school over time using parallel coordinate plots and identified Region; and
+                    •	by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+           ),
+           column(1)
+  ),
+  
   hr(),
   
   tabsetPanel(
@@ -810,11 +836,13 @@ ui <- fluidPage(
                                               h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Iowa Counties and Cities'))),
                                        column(1)),
                               
+                              br(), 
+                              
                               fluidRow(width = 12,
                                        column(1),
                                        column(3, p("Iowa Area Education Agencies (AEA) Regions", align = "center"),
                                               tags$img(src = "IA/aea-map.jpg", width = "100%"),
-                                              p("Graphic Source: http://www.iowaaea.org/find-my-aea/")
+                                              p("Graphic Source:", tags$a(href = "http://www.iowaaea.org/find-my-aea/", tags$i('Iowa AEA')), align = "center") 
                                        ),
                                        column(4, align = "center", br(), br(), 
                                               tags$img(src = "IA/aea_barplot.png", width = "100%")),
@@ -828,6 +856,7 @@ ui <- fluidPage(
                                        ),
                                        column(1)
                               ),
+                              
                               
                               br(),
                               
@@ -845,6 +874,10 @@ ui <- fluidPage(
                                        column(10, align = 'center', 
                                               h3(strong('Percentage of 2019-2020 High School Seniors that have Completed FAFSA Forms by Virginia Counties and Cities'))),
                                        column(1)),
+                             
+                              
+                              br(),
+                              
                               
                               fluidRow(width = 12,
                                        column(1),
@@ -888,7 +921,7 @@ ui <- fluidPage(
              
              conditionalPanel("input.col_state == 'Iowa'",
                               fluidRow(width = 12, 
-                                       column(12, align = "center", h3(strong("Higher-Education Graduate Plans by Locality")))
+                                       column(12, align = "center", h3(strong("Post-Secondary Education Plans by Institution Type and Location")))
                               ),
                               
                               
@@ -897,8 +930,8 @@ ui <- fluidPage(
                                        column(10, 
                                               
                                               p('Use the selectors to choose academic year and higher-education type. Hover over a county to show the 
-                                                county name, and number of students planning to attend for the 
-                                                year and higher-education type selected.'),
+                                                county name, and number of high school seniors graduating in the selected year that are planning to attend the 
+                                                higher-education type selected.'),
                                               p(tags$span(' Orange ', style = "background-color: #E69F00; color: white;border-radius: 25px; white-space: pre-wrap;"),  'circles locate public, four-year colleges.'),
                                               p(tags$span(' Green ', style = "background-color: #009E73; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate private, four-year colleges.'), 
                                               p(tags$span(' Pink ', style = "background-color: #CC79A7; color: white;border-radius: 25px; white-space: pre-wrap;"), 'circles locate community colleges.'), p("Click on circle to view college name and website.")
@@ -967,7 +1000,7 @@ ui <- fluidPage(
              conditionalPanel("input.col_state == 'Virginia'",
                               
                               fluidRow(width = 12, 
-                                       column(12, align = "center", h3(strong("In-State Higher-Education Undergraduate Enrollment by Locality")))
+                                       column(12, align = "center", h3(strong("In-State Post-Secondary Education Enrollment by Institution Type and Location")))
                               ),
                               
                               
@@ -1087,7 +1120,9 @@ ui <- fluidPage(
                                                
                                                fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
                                                         img(src = "IA/aea-map.jpg", width = "100%"),
-                                                               p("Graphic Source: http://www.iowaaea.org/find-my-aea/"))),
+                                                               p("Graphic Source:", tags$a(href = "http://www.iowaaea.org/find-my-aea/", tags$i('Iowa AEA')), align = "center")
+                                                               #p("Graphic Source: http://www.iowaaea.org/find-my-aea/", style = "font-size:40%"))),
+                                               )),
                               conditionalPanel("input.faf_state == 'Virginia'", 
                                                
                                                fluidRow(width = 12, style = "margin: 20px 0px 20px 20px",
@@ -1096,16 +1131,17 @@ ui <- fluidPage(
                        ),column(1),
                        column(width = 8, align = "left",br(),
                               p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
-                                                    over time for each high school by AEA Region. There is a line for each high school; high schools with
+                                                    over time for each high school by Region. There is a line for each high school; high schools with
                                                     greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines
                                                     and identified in the table. Notched yellow box plots for each year display the median number of completed applications
                                                     (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
                                                     schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median."),
-                              p("How to interpret the data: Applicants can submit FAFSA over an 18-month period for each school year. For example, 
+                              p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for each school year. For example, 
                                                     the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. In order to 
                                                     make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each school 
                                                     year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
-                                                    applications through April 30th of the first award year.")),
+                                                    applications through July 31st (Iowa)
+                                                    or April 30th (Virginia) of the first award year.")),
                        column(1)
               ),
               
@@ -1298,7 +1334,9 @@ ui <- fluidPage(
                                fluidRow(width = 12,
                                         column(2),
                                         column(10, align = 'center', 
-                                               h3(strong('Relative Percent Difference of Completed FAFSA by County for 2019-20')))
+                                               h3(strong('Relative Percent Difference of Completed FAFSA by County')),
+                                               h3(strong('School Years: 2019-2020 versus 2020-2021'))
+                                               )
                                         #column(1)
                                ),
                                fluidRow(column(2),
@@ -1460,7 +1498,9 @@ ui <- fluidPage(
                                fluidRow(width = 12,
                                         column(2),
                                         column(10, align = 'center', 
-                                               h3(strong('Relative Percent Difference of Completed FAFSA by School Division for 2019-20'))),
+                                               h3(strong('Relative Percent Difference of Completed FAFSA by Division')),
+                                               h3(strong('School Years: 2019-2020 versus 2020-2021'))
+                                               )
                                         #column(1)
                                         ),
                                fluidRow(column(2),
@@ -1834,7 +1874,7 @@ server <- function(input, output, session) {
                                                 direction = "auto"))) %>%
       setMapWidgetStyle(list(background= "transparent"))  %>%
       addLegend("bottomleft", pal = pal, values = ~bin,
-                title = "Relative Percent Difference 2019-20", opacity = 1)
+                title = "Relative Percent Difference 2019-20 vs 2020-21", opacity = 1)
     
     
   })
@@ -1858,7 +1898,7 @@ server <- function(input, output, session) {
                                                 direction = "auto"))) %>%
       setMapWidgetStyle(list(background= "transparent"))  %>%
       addLegend("bottomleft", pal = IA_pal, values = ~prd_bins,
-                title = "Relative Percent Difference 2019-20", opacity = 1)
+                title = "Relative Percent Difference 2019-20 vs 2020-21", opacity = 1)
     
     
   })
@@ -2445,6 +2485,8 @@ server <- function(input, output, session) {
     Type <- c("Four-Year Public", "Four-Year Private", "Community College", "Total")
     data <- data.frame(Type, Enrollment)
     data$Enrollment <- comma(as.integer(data$Enrollment), format='d')
+    
+    data <- data %>% rename(`Planned Enrollment` = Enrollment)
     
     data
   })
