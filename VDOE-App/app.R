@@ -740,7 +740,7 @@ jscode <- "var referer = document.referrer;
 # ui -----------------------------------------------------------------------------------------
 #
 
-ui <- fluidPage(
+ui <- fluidPage(title = "COVID-19 Impact on Education",
   useShinyjs(),
   theme = shinytheme("cosmo"),
   
@@ -786,27 +786,17 @@ ui <- fluidPage(
   fluidRow(width = 12,
            column(1),
            column(10, 
-                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for each school year.
-                    For example, the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. 
-                    In order to make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each 
-                    school year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
-                    applications through April 30th of the first award year for Virginia and the number of completed applications 
-                    through July 31st of the first award year for Iowa.")
+                  p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period 
+                    for each school year. For example, the FAFSA for the 2020-2021 award year is available from 
+                    January 1, 2020 through June 30, 2021. In order to make comparisons over the years and 
+                    evaluate the impact of COVID-19, the data displayed for each school year, 2015-2016, 
+                    2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
+                    applications through April 30th of the first award year for Virginia and the number of 
+                    completed applications through July 31st of the first award year for Iowa.")
            ),
            column(1)
   ),
-  
-  
-  fluidRow(width = 12,
-           column(1),
-           column(10, p("The number of completed FAFSA applications are displayed: "),
-                  tags$ul(
-                    tags$li("for each high school over time using parallel coordinate plots and identified Region; and"),
-                    tags$li("by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
-                  )
-           ),
-           column(1)
-  ),
+
   
   hr(),
   
@@ -1136,12 +1126,20 @@ ui <- fluidPage(
                                                     and identified in the table. Notched yellow box plots for each year display the median number of completed applications
                                                     (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
                                                     schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median."),
-                              p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for each school year. For example, 
-                                                    the FAFSA for the 2020-2021 award year is available from January 1, 2020 through June 30, 2021. In order to 
-                                                    make comparisons over the years and evaluate the impact of COVID-19, the data displayed for each school 
-                                                    year, 2015-2016, 2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
-                                                    applications through July 31st (Iowa)
-                                                    or April 30th (Virginia) of the first award year.")),
+                              p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for 
+                                each school year. For example, the FAFSA for the 2020-2021 award year is available from January 
+                                1, 2020 through June 30, 2021. In order to make comparisons over the years and evaluate the 
+                                impact of COVID-19, the data displayed for each school year, 2015-2016, 2016-2017, 2017-2018, 
+                                2018-2019, 2019-2020, 2020-2021, are the number of completed applications through April 30th of 
+                                the first award year for Virginia and the number of completed applications through July 31st of 
+                                the first award year for Iowa."),
+                            
+                              p("The number of completed FAFSA applications are displayed: "),
+                                        tags$ul(
+                                          tags$li("for each high school over time using parallel coordinate plots and identified Region; and"),
+                                          tags$li("by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+                                        )
+                              ),
                        column(1)
               ),
               
@@ -1535,15 +1533,19 @@ ui <- fluidPage(
                                             application reports include six quarters of data for each award year. The data included reflect the number of submitted and
                                             completed FAFSAs among first-time filing applicants no older than 19 at the cutoff date who will have received their high school
                                             diploma by the start of the school year to which they are applying for aid. FAFSA Virginia data for the applications 
-                                            processed by April 30th for the years 2015-16, 2016-2017, 2017-18, 2018-19, and 2019-20 were used in the dashboard, 
+                                            processed by April 30th and FAFSA Iowa data for the applications processed by July 31st for the years 2015-16, 2016-2017, 2017-18, 2018-19, and 2019-20 were used in the dashboard, 
                                             variables include school name, location, application submitted and applications completed.")))
                       ),
              
              fluidRow(width = 12, style = "margin: 20px",
                       column(3, align = "center", tags$a(href = "https://nces.ed.gov/ipeds/use-the-data" ,tags$img(src = "IA/ipeds.png", align = "top", width = '100%'))),
-                      column(9, wellPanel(p("...", tags$a(href = "https://nces.ed.gov/ipeds/use-the-data", tags$i("The Integrated Postsecondary Education Data System")), 
-                                            "... "), 
-                                          p("...")))
+                      column(9, wellPanel(p(tags$a(href = "https://nces.ed.gov/ipeds/use-the-data", tags$i("The Integrated Postsecondary Education Data System (IPEDS)")), '"is a system 
+                                            of interrelated surveys conducted annually by the U.S. Department of Education’s National Center for Education 
+                                            Statistics (NCES). IPEDS gathers information from every college, university, and technical and vocational 
+                                            institution that participates in the federal student financial aid programs."  Information collected includes institutional characteristics, prices and resources,
+                                            admissions and enrollment data, student financial aid data, and degree/certificate completion and student success statistics.' 
+                                            ), 
+                                          p("The locations of each post-secondary 4-year public, 4-year private not-for-profit, and 2-year public institution were downloaded from IPEDS.")))
              ),
              
              
@@ -1557,7 +1559,7 @@ ui <- fluidPage(
                                             officially enrolls students (i.e. student records are maintained on a Virginia teacher's register or automated system). 
                                             Data are collected at the student-level and are limited to one active record per student within the state."), 
                                           p("The Fall Membership Build-A-Table was used to download the percentage of economically disadvantaged seniors for 
-                                            the 2019-20 school year for each high school. Economically disadvantaged seniors are those who have met of one if the 
+                                            the 2019-20 school year for each Virginia high school. Economically disadvantaged seniors are those who have met of one if the 
                                             following criteria : 1) is eligible for Free/Reduced Meals, or 2) receives TANF, or 3) is eligible for Medicaid, or 4) 
                                             identified as either Migrant or experiencing Homelessness. English learners are those seniors who once received English 
                                             learner services and finished an English learner program within the last four school years.")))),
@@ -1581,11 +1583,21 @@ ui <- fluidPage(
              
              fluidRow(width = 12, style = "margin: 20px",
                       column(3, align = "center", tags$a(href = "https://educateiowa.gov/data-and-reporting/education-statistics", tags$img(src = "IA/IA_doe.jpg", width = '40%'))),
-                      column(9, wellPanel(p('The', tags$a(href = "https://educateiowa.gov/data-and-reporting/education-statistics", tags$i('Iowa Department of Education')), '...."'),
-                                          p('...')))
+                      column(9, wellPanel(p('The', tags$a(href = "https://educateiowa.gov/data-and-reporting/education-statistics", tags$i('Iowa Department of Education')), 'annually collects data from K-12 public
+                                            schools in Iowa including student enrollment and demographic information, graduation rates and graduate intentions, building locations and staff and financial information.'
+                                            ),
+                                          p('Iowa high school senior class enrollment, race/ethnicity, free and reduced-price lunch, and english learner data were downloaded from Graduation Rates by Building, By Subgroup
+                                            for 2019.  Data on high school graduate intentions was downloaded from Graduate Intentions by District (including Graduate Counts), 2018-2019, and included counts of graduating seniors planning
+                                            to attend 4-year public, 4-year private, and 2-year public (community college) post-secondary institutions. High school locations were downloaded from Public Buildings, 2019-2020.' 
+                                            )
+                                          )
+                            )
+             
              )
              
-             ),
+    ),
+             
+             
     tabPanel(h4("Data Downloads"),
              fluidRow(width = 12, style = "margin: 20px",
                       
@@ -1598,7 +1610,19 @@ ui <- fluidPage(
                                                   selected = "Iowa")
                                )
                       ),
-                      
+
+                      conditionalPanel("input.download_state == 'Iowa'",
+                                       
+                                       fluidRow(
+                                         column(12,
+                                                p("Use the CSV or Excel button below to export the integrated data set."),
+                                                tableOutput("iowa_dictionary")
+                                                
+                                         )),
+                                       br(),
+                                       DT::dataTableOutput("IA_data_downloads")
+                      ),
+                                            
                       conditionalPanel("input.download_state == 'Virginia'",
                       
                           fluidRow(
@@ -1610,7 +1634,9 @@ ui <- fluidPage(
                           br(),
                           DT::dataTableOutput("data_downloads")
                       )
-             )),
+             )
+             
+             ),
     tabPanel(h4("Resources"),
              
              fluidRow(width = 12, style = "margin: 20px", 
@@ -1689,6 +1715,8 @@ server <- function(input, output, session) {
   # Run JavaScript Code
   runjs(jscode)
   
+  # Data download tables -------------------------------
+  
   output$data_downloads <- DT::renderDataTable({
     DT::datatable(data_download[,-c(1,4, 7, 31, 32)] ,
                   
@@ -1699,9 +1727,57 @@ server <- function(input, output, session) {
                   rownames = FALSE,
                   extensions = c('Buttons'),
                   options = list(  pageLength = 10, scrollX = T,
-                                  buttons = list(list(extend = 'csv', filename= 'data_download'),
-                                                 list(extend = 'excel', filename = 'data_download')), dom="BlfrtipS", iDisplayLength=-1)
-    )
+                                  buttons = list(list(extend = 'csv', filename= 'VA_data_download'),
+                                                 list(extend = 'excel', filename = 'VA_data_download')), 
+                                  dom="BlfrtipS", iDisplayLength=-1,
+                                  columnDefs = list(list(className = 'dt-right', targets = "_all"))
+                                  )
+    ) %>% formatRound(columns=11:12, digits=6)
+  })
+
+  
+  output$IA_data_downloads <- DT::renderDataTable({
+    DT::datatable(IA_hs_fafsa %>%
+                    transmute("School" = School,
+                              "School Name" = `School Name.x`,
+                              "County" = County.x,
+                              "County Name" = `County Name`,
+                              "District" = District,
+                              "District Name" = `District Name.y`,
+                              "AEA" = AEA,
+                              "AEA Name" = `AEA Name`,
+                              "Location" = `Physcial City`,
+                              "Lat" = lat,
+                              "Long" = long,
+                              "Seniors" = seniors,
+                              "FPL" = free_reduced_lunch,
+                              "EL" = english_learners,
+                              "Minority" = minority,
+                              "Submit20" = SUBMIT_July_20,
+                              "Complete20" = COMPLETE_July_20,
+                              "Submit19" = SUBMIT_July_19,
+                              "Complete19" = COMPLETE_July_19,
+                              "Submit18" = SUBMIT_July_18,
+                              "Complete18" = COMPLETE_July_18,
+                              "Submit17" = SUBMIT_July_17,
+                              "Complete17" = COMPLETE_July_17,
+                              "Submit16" = SUBMIT_July_16,
+                              "Complete16" = COMPLETE_July_16,
+                              "Submit15" = SUBMIT_July_15,
+                              "Complete15" = COMPLETE_July_15
+                              ),
+                  
+                  rownames = FALSE,
+                  extensions = c('Buttons'),
+                  options = list(  pageLength = 10, scrollX = T,
+                                   buttons = list(list(extend = 'csv', filename= 'IA_data_download'),
+                                                  list(extend = 'excel', filename = 'IA_data_download')), 
+                                   dom="BlfrtipS", 
+                                   iDisplayLength=-1,
+                                   columnDefs = list(list(className = 'dt-right', targets = "_all"))
+                  )
+                                   
+              ) %>% formatRound(columns=10:11, digits=6)
   })
   
 
@@ -2068,7 +2144,7 @@ server <- function(input, output, session) {
                 opacity = 1,
                 labFormat = function(type, cuts, p) {
                   n = length(cuts)
-                  paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
+                  paste0("[", ceiling(cuts[-n]), " &ndash; ", floor(cuts[-1]), "]")
                 })
     
   })
@@ -2447,7 +2523,7 @@ server <- function(input, output, session) {
         opacity = 1,
         labFormat = function(type, cuts, p) {
           n = length(cuts)
-          paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
+          paste0("[", ceiling(cuts[-n]), " &ndash; ", floor(cuts[-1]), "]")
         })
     
   })
@@ -2640,6 +2716,22 @@ server <- function(input, output, session) {
     va_dict
     
   })
+  
+  
+  output$iowa_dictionary <- renderTable({
+    
+    ia_dict <- data.frame(Variable = c("Seniors", "FPL", "EL", "Minority", "SubmitYY", "CompleteYY"),
+                          Definition = c("The number of seniors.",
+                                         "The number of seniors eligible for free or reduced-price lunch.",
+                                         "The number of seniors who are English Learners.",
+                                         "The number of seniors who are African American, Hispanic, American Indian, Asian, Hawaiian/Pacific Islander, or two or more races.",
+                                         "The number of FAFSA applications submitted from the beginning of the 18 month cycle until July 31st of the following year (i.e. Submit19 is for the 2019-20 cycle that began January 1, 2019 and includes applications through the end of July 31, 2020).",
+                                         "The number of FAFSA completed applications from the beginning of the 18 month cycle until July 31st of the following year (i.e. Complete19 is for the 2019-20 cycle that began January 1, 2019 and includes applications through the end of July 31, 2020).")) 
+    
+    ia_dict 
+    
+  })
+  
 }
 
 # Run the application 
