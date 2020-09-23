@@ -6,7 +6,8 @@
   <body>
     <script>
       function redirectFunc() {
-        window.location.assign("https://dads2busy.shinyapps.io/VDOE-App/");
+        uri = "https://dspgtools.shinyapps.io/VDOE-App/" + window.location.search;
+        window.location.assign(uri);
       }
       redirectFunc();
       // setTimeout("redirectFunc()", 2000);
