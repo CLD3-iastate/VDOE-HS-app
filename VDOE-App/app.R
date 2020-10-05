@@ -1696,7 +1696,7 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
                              
                              p(a(href = "mailto:kjl5t@virginia.edu"," Kathryn Linehan"), ", Research Scientist"),
                              
-                             p(a(href = "mailto:sm9dv@virginia.edu", "Sarah McDonald"),  ", Data Science for the Public Good Fellow")))
+                             p(a(href = "mailto:sm9dv@virginia.edu", "Sarah McDonald"),  ", Research Assistant")))
              )
     ),
   hr(),
