@@ -281,7 +281,10 @@ IA_parcoord.val<- function (data, columns = 1:ncol(data), groupColumn = NULL, sc
   
   mapping2 <- GGally:::add_and_overwrite_aes(mapping2, mapping)
   
+  
   p <- ggplot(data = data.m, mapping = mapping2)
+  
+
   
   if (!is.null(shadeBox)) {
     d.sum <- ddply(data.m, c("variable"), summarize, min = min(value),
@@ -342,6 +345,7 @@ IA_parcoord.val<- function (data, columns = 1:ncol(data), groupColumn = NULL, sc
     }
     
     if (showPoints) {
+      
       p <- p + geom_point(data = subset(data.m, data.m[,1] == "No Decrease"), size=2)
       p <- p + geom_point(data = subset(data.m, data.m[,1] == "Decrease"), size=2)
       

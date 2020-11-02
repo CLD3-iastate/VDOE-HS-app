@@ -16,6 +16,7 @@ library(GGally)
 library(ggrepel)
 library(DT)
 library(shinyjs)
+library(shinyBS)
 
 source("IA_parcoords.R")
 
@@ -37,7 +38,9 @@ demo_df <- read_excel("data/VA/Demo.xlsx", col_names = TRUE)
 pell <- readRDS("data/VA/pell_acs.rds")
 
 division <- st_read("data/VA/division/division.shp")
-division$bin  <- factor(division$bin , levels = c("[-80, -60)", "[-60, -40)", "[-40, -20)", "[-20, 0)", "0", "(0, 20]", "(20, 40]", "(40, 60]"))
+division[!is.na(division$bin) & division$bin == "[-80, -60)", "bin"] <- "[-61.82, -60)"
+division[!is.na(division$bin) & division$bin == "(40, 60]", "bin"] <- "(40, 51.61]"
+division$bin  <- factor(division$bin , levels = c("[-61.82, -60)", "[-60, -40)", "[-40, -20)", "[-20, 0)", "0", "(0, 20]", "(20, 40]", "(40, 51.61]"))
 
 #
 # load IA data -----------------------------------------------------------
@@ -71,7 +74,7 @@ label_division <- lapply(
   paste("<strong>Division: </strong>",
         division$new_name,
         "<br />",
-        "<strong>RPD 2019-20: </strong>",
+        "<strong>Relative Percent Difference 2019-20: </strong>",
         division$RPD,
         "<br />",
         "<strong># of Completed FAFSAs in 2020: </strong>",
@@ -599,7 +602,7 @@ for(i in 1:8){
     scale_color_manual(values=cbPalette[c(7,1)]) +
     scale_x_discrete(labels=c("2015-16","2016-17","2017-18","2018-19","2019-20","2020-21")) +
     theme_SDAD() + 
-    xlab("") + ylab("Number of Completed FAFSA Applications") +
+    xlab("") + ylab("Number of Completed Applications through April 30th of the First Award Year") +
     theme(
       plot.title = element_text(size=14, hjust=0.5),
       axis.text.x=element_text(size=12), 
@@ -665,14 +668,14 @@ for(name in c("Central Rivers", "Grant Wood", "Great Prairie", "Green Hills",
     scale_color_manual(values=cbPalette[c(7,1)]) +
     scale_x_discrete(labels=c("2015-16","2016-17","2017-18","2018-19","2019-20","2020-21")) +
     theme_SDAD() +
-    xlab("") + ylab("Number of Completed FAFSA Applications") +
+    xlab("") + ylab("Number of Completed Applications through July 31st of the First Award Year") +
     theme(
       plot.title = element_text(size=14, hjust=0.5),
       axis.text.x=element_text(size=12),
       axis.text.y=element_text(size=12),
       legend.position="none")
   
-  ly <- ggplotly(p, tooltip = "text")
+  ly <- ggplotly(p, tooltip = "text") 
   
   ly$x$data[[1]]$hoverinfo <- "none"
   ly$x$data[[1]]$notched <- TRUE
@@ -752,6 +755,22 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
   ),
   tags$head(tags$style(HTML(" .sidebar { font-size: 40%; } "))),
   
+  tags$script('
+  $( document ).ready(function() {
+
+     var x = $("#vid").attr("src");
+
+     $("#video_popup").on("hidden.bs.modal", function (event) {
+     $("#vid").attr("src", "");
+    });
+
+    $("#video_popup").on("show.bs.modal", function(){
+        $("#vid").attr("src", x);
+    });
+
+  })
+  '),
+  
   # headerPanel(
   #   #tags$a(href = "https://biocomplexity.virginia.edu/social-decision-analytics", 
   #   title = "COVID-19 Impact"
@@ -787,7 +806,7 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
            column(1),
            column(10, 
                   p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period 
-                    for each school year. For example, the FAFSA for the 2020-2021 award year is available from 
+                    for each school year. For example, the FAFSA for the 2020-2021 award year are available from 
                     January 1, 2020 through June 30, 2021. In order to make comparisons over the years and 
                     evaluate the impact of COVID-19, the data displayed for each school year, 2015-2016, 
                     2016-2017, 2017-2018, 2018-2019, 2019-2020, 2020-2021, are the number of completed 
@@ -797,6 +816,19 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
            column(1)
   ),
 
+  fluidRow(width = 12,
+           column(1),
+           column(10, 
+                  #p(tags$a(href = "https://www.youtube.com/watch?v=b9axMDoZFCQ&feature=youtu.be", 
+                  #         tags$i("Video Walk-Through of the Education Dashboard"), target="_blank")),
+                  actionLink("video_button", "Video Walk-Through of the Education Dashboard"),
+                  bsModal(id = "video_popup", title = "Video Walk-Through of Education Dashboard",
+                          trigger = "video_button", size = "large",
+                          HTML('<iframe id="vid" width="560" height="315" src="https://www.youtube-nocookie.com/embed/b9axMDoZFCQ?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'))
+           ),
+           column(1)
+  ),
+  
   
   hr(),
   
@@ -1121,13 +1153,13 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
                        ),column(1),
                        column(width = 8, align = "left",br(),
                               p("The parallel coordinate plots display the number of completed Free Applications for Federal Student Aid (FAFSA)
-                                                    over time for each high school by Region. There is a line for each high school; high schools with
-                                                    greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are displayed with orange lines
-                                                    and identified in the table. Notched yellow box plots for each year display the median number of completed applications
+                                                    over time for each high school grouped by Region (VA) or Area Education Agencies (IA). There is a trend line for each high school; high schools with
+                                                    greater than a 25% reduction in completed FAFSA applications from 2019-20 to 2020-21 are identified using orange trend lines
+                                                    and described in the table. Notched yellow box plots for each year display the median number of completed applications
                                                     (center of notch), the upper quartile (top of the box), and lower quartile (bottom of the box). 50% of all high
                                                     schools fall within the upper and lower quartile. The notch boundary is the 95% confidence interval of the median."),
                               p(strong("How to interpret the data:"), "Applicants can submit FAFSA over an 18-month period for 
-                                each school year. For example, the FAFSA for the 2020-2021 award year is available from January 
+                                each school year. For example, the FAFSA for the 2020-2021 award year are available from January 
                                 1, 2020 through June 30, 2021. In order to make comparisons over the years and evaluate the 
                                 impact of COVID-19, the data displayed for each school year, 2015-2016, 2016-2017, 2017-2018, 
                                 2018-2019, 2019-2020, 2020-2021, are the number of completed applications through April 30th of 
@@ -1136,8 +1168,8 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
                             
                               p("The number of completed FAFSA applications are displayed: "),
                                         tags$ul(
-                                          tags$li("for each high school over time using parallel coordinate plots and identified Region; and"),
-                                          tags$li("by School Divisions in Virginia and Counties in Iowa using choropleth maps.")
+                                          tags$li("for each high school over time using parallel coordinate plots grouped by Region for Virginia and Area Education Agencies for Iowa; and"),
+                                          tags$li("by Virginia School Divisions and Iowa Counties using choropleth maps.")
                                         )
                               ),
                        column(1)
@@ -1696,7 +1728,7 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
                              
                              p(a(href = "mailto:kjl5t@virginia.edu"," Kathryn Linehan"), ", Research Scientist"),
                              
-                             p(a(href = "mailto:sm9dv@virginia.edu", "Sarah McDonald"),  ", Data Science for the Public Good Fellow")))
+                             p(a(href = "mailto:sm9dv@virginia.edu", "Sarah McDonald"),  ", Research Assistant")))
              )
     ),
   hr(),
@@ -1704,7 +1736,7 @@ ui <- fluidPage(title = "COVID-19 Impact on Education",
   fluidRow(style = "margin: 20px",
            width = 12, 
            column(12, align = 'center',
-                  em('Last updated: September 2020'))
+                  em('Last updated: October 2020'))
   )
                                                    )
 
@@ -1733,7 +1765,7 @@ server <- function(input, output, session) {
                                   columnDefs = list(list(className = 'dt-right', targets = "_all"))
                                   )
     ) %>% formatRound(columns=11:12, digits=6)
-  })
+  },  server = FALSE)
 
   
   output$IA_data_downloads <- DT::renderDataTable({
@@ -1778,7 +1810,7 @@ server <- function(input, output, session) {
                   )
                                    
               ) %>% formatRound(columns=10:11, digits=6)
-  })
+  }, server = FALSE)
   
 
   # VA high school map server fcn ---------------------------------------------------
@@ -1791,12 +1823,14 @@ server <- function(input, output, session) {
         addProviderTiles(providers$CartoDB.Positron) %>%
         addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillColor = ~VA_fpal(virginia$CO_Per), fillOpacity = .8) %>%
         addPolylines(color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0, label =VA_co_labels, labelOptions = labelOptions(direction = "top",
-                                                                                                                                                                                        style = list("font-size" = "12px",
-                                                                                                                                                                                                     "border-color" = "rgba(0,0,0,0.5)",
-                                                                                                                                                                                                     "text-align" = "left",
-                                                                                                                                                                                                     direction = "auto"
-                                                                                                                                                                                        )))%>%
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, 
+                    smoothFactor = 0.7, fillOpacity = 0, label =VA_co_labels, 
+                    labelOptions = labelOptions(direction = "top",
+                                                style = list("font-size" = "12px",
+                                                             "border-color" = "rgba(0,0,0,0.5)",
+                                                             "text-align" = "left",
+                                                             direction = "auto"
+                                                )))%>%
         addCircleMarkers(data = hs, radius = 5, fillColor = "orange", fillOpacity = 0.6, stroke = TRUE, color = "orange", opacity = 0.6, weight = 1,  popup= labels)%>%
         setMapWidgetStyle(list(background= "transparent"))  %>%
         # addLegend("bottomleft", pal = VA_fpal, values = ~virginia$bins,
@@ -1804,7 +1838,7 @@ server <- function(input, output, session) {
       addLegend("bottomleft",
                 pal = VA_fpal,
                 values =  ~(virginia$CO_Per),
-                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                title = "% High School Seniors that Completed FAFSA Forms by April 30th, 2020",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
@@ -1819,19 +1853,21 @@ server <- function(input, output, session) {
         addProviderTiles(providers$CartoDB.Positron) %>%
         addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillColor = ~VA_fpal(virginia$CO_Per), fillOpacity = .8) %>%
         addPolylines(color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, opacity = 1) %>% 
-        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0, label = VA_co_labels, labelOptions = labelOptions(direction = "top",
-                                                                                                                                                                                         style = list("font-size" = "12px",
-                                                                                                                                                                                                      "border-color" = "rgba(0,0,0,0.5)",
-                                                                                                                                                                                                      "text-align" = "left",
-                                                                                                                                                                                                      direction = "auto"
-                                                                                                                                                                                         )))%>%
+        addPolygons(data = virginia, color = "#5A5766", opacity = 1, weight = 0.9, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0, 
+                    label = VA_co_labels, 
+                    labelOptions = labelOptions(direction = "top",
+                                                style = list("font-size" = "12px",
+                                                             "border-color" = "rgba(0,0,0,0.5)",
+                                                             "text-align" = "left",
+                                                             direction = "auto"
+                                                )))%>%
         setMapWidgetStyle(list(background= "transparent"))  %>%
         # addLegend("bottomleft", pal = VA_fpal, values = ~virginia$bins,
         #           title = "% High School Seniors that have Completed FAFSA Forms", opacity = 1)
         addLegend("bottomleft",
                 pal = VA_fpal,
                 values =  ~(virginia$CO_Per),
-                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                title = "% High School Seniors that Completed FAFSA Forms by April 30th, 2020",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
@@ -1874,7 +1910,7 @@ server <- function(input, output, session) {
         addLegend("bottomleft",
                 pal = IA_fpal,
                 values =  ~round(perc_complete_20, 0),
-                title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                title = "% High School Seniors that Completed FAFSA Forms by July 31st, 2020",  #by<br>Quintile Group",
                 opacity = 0.7,
                 na.label = "Not Available",
                 labFormat = function(type, cuts, p) {
@@ -1906,7 +1942,7 @@ server <- function(input, output, session) {
         addLegend("bottomleft",
                   pal = IA_fpal,
                   values =  ~round(perc_complete_20, 0),
-                  title = "% High School Seniors that have Completed FAFSA Forms",  #by<br>Quintile Group",
+                  title = "% High School Seniors that Completed FAFSA Forms by July 31st, 2020",  #by<br>Quintile Group",
                   opacity = 0.7,
                   na.label = "Not Available",
                   labFormat = function(type, cuts, p) {
@@ -1942,7 +1978,10 @@ server <- function(input, output, session) {
     leaflet(division, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       setView(zoom = 6, lat = 38.032560, lng = -79.422777) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addPolygons(fillColor =  ~pal(bin), color = "black", opacity = 1, weight = 1, fillOpacity = .8,  label = label_division, 
+      addPolygons(color = "black", opacity = 1, weight = 1, stroke = TRUE, smoothFactor = 0.7, fillColor =  ~pal(bin), fillOpacity = .8) %>%
+      addPolylines(data = superintendent, color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, opacity = 1) %>%
+      addPolygons(color = "black", opacity = 1, weight = 1, stroke = TRUE, smoothFactor = 0.7, fillOpacity = 0,  
+                  label = label_division, 
                   labelOptions = labelOptions(direction = "top",           
                                               style = list(
                                                 "font-size" = "12px",
@@ -1951,22 +1990,28 @@ server <- function(input, output, session) {
       setMapWidgetStyle(list(background= "transparent"))  %>%
       addLegend("bottomleft", pal = pal, values = ~bin,
                 title = "Relative Percent Difference 2019-20 vs 2020-21", opacity = 1)
-    
+  
     
   })
   
   output$IA_rel_fafsa <- renderLeaflet({
     
-    IAtest <- colorRampPalette( c("#D94801","#F9F1CB", "#084594"))(9)
+    IAtest <- colorRampPalette( c("#D94801","#F9F1CB", "#084594"))(9) 
+    IAtest <- IAtest[-c(1,9)]
     
     IA_pal <- colorFactor(palette = IAtest, domain = IA_fafsa_by_county$prd_bins)
     
     
     leaflet(IA_fafsa_by_county, options = leafletOptions(minZoom = 7, maxZoom = 10)) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addPolygons(fillColor =  ~IA_pal(prd_bins), color = "black", opacity = 1, weight = 1, 
+      
+      addPolygons(color = "black", weight = 1, opacity = 1, stroke = TRUE, smoothFactor = 0.7,
+                  fillColor = ~IA_pal(prd_bins), fillOpacity = .8) %>%
+      addPolylines(data = IA_aea, color = "#5A5766", weight = 3, fill = "transparent", fillOpacity = 0, 
+                   opacity = 1) %>%
+      addPolygons(color = "black", opacity = 1, weight = 1, 
                   stroke = TRUE, smoothFactor = 0.7,
-                  fillOpacity = .8,  label = IA_relfaf_labels, 
+                  fillOpacity = 0,  label = IA_relfaf_labels, 
                   labelOptions = labelOptions(direction = "top",           
                                               style = list(
                                                 "font-size" = "12px",

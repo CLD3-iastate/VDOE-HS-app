@@ -348,17 +348,22 @@ fafsa_by_county$prd_bins = "0"
 
 fafsa_by_county[fafsa_by_county$pct_rel_diff < 0, "prd_bins"] <- 
   cut(fafsa_by_county[fafsa_by_county$pct_rel_diff < 0, "pct_rel_diff"]$pct_rel_diff, 
-      breaks = c(-Inf, -20, -10, -5, 0), right = FALSE)
+      #breaks = c(-Inf, -20, -10, -5, 0), right = FALSE)
+      breaks = c(round(min(fafsa_by_county$pct_rel_diff),2), -40, -20, 0), right = FALSE, dig.lab = 4)
 
 fafsa_by_county[fafsa_by_county$pct_rel_diff > 0, "prd_bins"] <- 
   cut(fafsa_by_county[fafsa_by_county$pct_rel_diff > 0, "pct_rel_diff"]$pct_rel_diff, 
-      breaks = c(0, 5, 10, 20, Inf), right = TRUE)
+      #breaks = c(0, 5, 10, 20, Inf), right = TRUE)
+      breaks = c(0, 20, 40, round(max(fafsa_by_county$pct_rel_diff),2)), right = TRUE, dig.lab = 4)
 
 fafsa_by_county$prd_bins <- factor(fafsa_by_county$prd_bins, 
-                                   levels = c("[-Inf,-20)", "[-20,-10)", "[-10,-5)", "[-5,0)", "0", 
-                                              "(0,5]", "(5,10]", "(10,20]", "(20,Inf]")) 
-levels(fafsa_by_county$prd_bins)[levels(fafsa_by_county$prd_bins) == "(20,Inf]"] <- ">20"                                  
-levels(fafsa_by_county$prd_bins)[levels(fafsa_by_county$prd_bins) == "[-Inf,-20)"] <- "<-20" 
+                                   #levels = c("[-Inf,-20)", "[-20,-10)", "[-10,-5)", "[-5,0)", "0", 
+                                   #            "(0,5]", "(5,10]", "(10,20]", "(20,Inf]")) 
+                                   levels = c("[-42.5,-40)", "[-40,-20)", "[-20,0)", "0", 
+                                              "(0,20]", "(20,40]", "(40,42.11]")) 
+
+#levels(fafsa_by_county$prd_bins)[levels(fafsa_by_county$prd_bins) == "(20,Inf]"] <- ">20"                                  
+#levels(fafsa_by_county$prd_bins)[levels(fafsa_by_county$prd_bins) == "[-Inf,-20)"] <- "<-20" 
 
 
 # add county geometries to data set
