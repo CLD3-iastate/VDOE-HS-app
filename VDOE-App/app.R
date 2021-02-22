@@ -2650,7 +2650,7 @@ server <- function(input, output, session) {
     
     
     par(mar = c(1,1,1,1))
-    pie(data$enroll, labels = paste("\n\n  ", data$type, " \n    ", round(data$enroll, 2), "%", " ", "\n"),col = c(cbPalette[8], cbPalette[2], cbPalette[4]),border = "white", main= "")
+    pie(data$enroll, labels = paste("\n\n  ", data$type, " \n    ", round(data$enroll, 2), "%", " ", "\n"),col = c(cbPalette[2], cbPalette[4], cbPalette[8]),border = "white", main= "")
     
   })
   
